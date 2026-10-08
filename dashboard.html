@@ -226,6 +226,16 @@
     row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t"></div><div class="s"></div></div><span class="pill wait"></span>';
     row.querySelector('.t').textContent = v.file;
     row.querySelector('.s').textContent = v.label + (v.size ? ' · ' + (v.size/1024/1024).toFixed(1) + ' МБ' : '');
+    // кадр видео вместо серого прямоугольника
+    if (v.thumb) {
+      const th = row.querySelector('.thumb');
+      const img = document.createElement('img');
+      img.src = API + '/thumb/' + encodeURIComponent(v.thumb);
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:9px';
+      img.onerror = () => { img.remove(); };
+      th.textContent = '';
+      th.appendChild(img);
+    }
     row.querySelector('.pill').textContent = 'Готово';
 
     const box = document.createElement('div');
@@ -262,23 +272,23 @@
         data.videos.slice().reverse().forEach(renderRow);
       }
       document.getElementById('statVid').textContent = data.videos.length;
-    } catch (e) { setStatus('❌ ' + e.message); }
+    } catch (e) { setStatus(e.message); }
   }
 
   // ── Скачать по ссылке ──
   async function doDownload() {
     const url = document.getElementById('urlInput').value.trim();
     if (!url) { setStatus('Вставьте ссылку'); return; }
-    setStatus('⏳ Скачиваю в лучшем качестве…');
+    setStatus('Скачиваю в лучшем качестве…');
     try {
       const r = await fetch(API + '/download', { method: 'POST', headers: authH(), body: JSON.stringify({ url }) });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Ошибка');
-      setStatus('✅ Скачано: ' + (data.size/1024/1024).toFixed(1) + ' МБ');
+      setStatus('Скачано: ' + (data.size/1024/1024).toFixed(1) + ' МБ');
       document.getElementById('urlInput').value = '';
       if (data.rec) renderRow(data.rec);
       else await loadVideos();
-    } catch (e) { setStatus('❌ ' + e.message); }
+    } catch (e) { setStatus(e.message); }
   }
 
   // ── Уникализировать ──
@@ -286,14 +296,14 @@
     const howMany = prompt('Сколько версий видео прислать? (1–5)', '1');
     if (!howMany) return;
     const count = Math.max(1, Math.min(5, parseInt(howMany, 10) || 1));
-    setStatus('⏳ Уникализирую ' + count + '…');
+    setStatus('Уникализирую ' + count + '…');
     try {
       const r = await fetch(API + '/uniquify', { method: 'POST', headers: authH(), body: JSON.stringify({ file, count }) });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Ошибка');
-      setStatus('✅ Готово: ' + data.files.length + ' версий');
+      setStatus('Готово: ' + data.files.length + ' версий');
       await loadVideos();
-    } catch (e) { setStatus('❌ ' + e.message); }
+    } catch (e) { setStatus(e.message); }
   }
 
   // ── Удалить видео ──
@@ -308,7 +318,7 @@
       const list = document.getElementById('videoList');
       if (!list.querySelector('.qitem')) list.innerHTML = '<div class="empty"><div class="ic">🎞</div><p>Видео пока нет</p><small>Загрузите первое видео или вставьте ссылку</small></div>';
       document.getElementById('statVid').textContent = list.querySelectorAll('.qitem').length;
-    } catch (e) { setStatus('❌ ' + e.message); }
+    } catch (e) { setStatus(e.message); }
   }
 
   // ── Скачать файл ──
@@ -321,14 +331,14 @@
       const t = document.createElement('a');
       t.href = u; t.download = a.href.split('/').pop(); t.click();
       URL.revokeObjectURL(u);
-    } catch (err) { setStatus('❌ ' + err.message); }
+    } catch (err) { setStatus(err.message); }
   }
 
   // Загрузка локального файла — подсказка (пока только по ссылке)
   document.getElementById('fileInput').addEventListener('change', (ev) => {
     const f = ev.target.files[0];
     if (!f) return;
-    setStatus('⚠️ Загрузка файлов с сайта появится позже (пока — по ссылке).');
+    setStatus('Загрузка файлов с сайта появится позже (пока — по ссылке).');
     ev.target.value = '';
   });
 
