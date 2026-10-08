@@ -134,11 +134,17 @@
   <div class="grid">
     <div class="card">
       <h2><span class="tick"></span> Видео</h2>
+      <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
+        <input id="urlInput" type="text" placeholder="Вставьте ссылку на видео (TikTok, YouTube, Instagram…)"
+          style="flex:1;min-width:0;padding:.7rem .85rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.85rem;outline:none">
+        <button class="btn btn-neon" onclick="doDownload()">Скачать</button>
+      </div>
       <div class="drop" onclick="document.getElementById('fileInput').click()">
         <div class="ic">🎬</div>
-        <p>Перетащите видео или вставьте ссылку</p>
-        <small>MP4, MOV · TikTok, YouTube, Instagram, VK</small>
+        <p>Или перетащите видеофайл</p>
+        <small>MP4, MOV · либо вставьте ссылку выше</small>
       </div>
+      <div id="workStatus" style="text-align:center;font-size:.8rem;color:var(--neon-2);min-height:1.2rem;margin-top:.6rem"></div>
       <div id="videoList" style="margin-top:1rem">
         <div class="empty">
           <div class="ic">🎞</div>
@@ -189,10 +195,12 @@
 </div>
 
 <script>
+  const API = 'https://nl-openclaw.tailb52267.ts.net:10000/api';
+  const token = () => localStorage.getItem('uniqpost_token') || '';
+
   // Охрана
-  if (localStorage.getItem('uniqpost_demo_auth') !== '1' && !localStorage.getItem('uniqpost_token')) {
-    location.replace('login.html');
-  }
+  if (!token()) { location.replace('login.html'); }
+
   // Имя в шапке
   try {
     const em = localStorage.getItem('uniqpost_email') || 'yulia9500@mail.ru';
@@ -200,21 +208,104 @@
     document.getElementById('uname').textContent = em;
   } catch (e) {}
 
-  // Загрузка видео — реальная (файл → список)
-  const fileInput = document.getElementById('fileInput');
-  fileInput.addEventListener('change', () => {
-    const f = fileInput.files[0];
-    if (!f) return;
+  const workStatus = document.getElementById('workStatus');
+  const setStatus = t => { workStatus.textContent = t || ''; };
+
+  function addVideoRow(name, sub, pill) {
     const list = document.getElementById('videoList');
-    if (list.querySelector('.empty')) list.innerHTML = '';
-    const sizeMb = (f.size / 1024 / 1024).toFixed(1);
+    const emptyEl = list.querySelector('.empty');
+    if (emptyEl) emptyEl.remove();
     const row = document.createElement('div');
     row.className = 'qitem';
-    row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t">' + f.name +
-      '</div><div class="s">' + sizeMb + ' МБ · только что загружено</div></div><span class="pill wait">Загружено</span>';
+    row.dataset.name = name;
+    row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t"></div><div class="s"></div></div><span class="pill wait"></span>';
+    row.querySelector('.t').textContent = name;
+    row.querySelector('.s').textContent = sub;
+    row.querySelector('.pill').textContent = pill;
     list.prepend(row);
-    document.getElementById('statVid').textContent = list.children.length;
-    fileInput.value = '';
+    document.getElementById('statVid').textContent = list.querySelectorAll('.qitem').length;
+    return row;
+  }
+
+  // Скачать по ссылке
+  async function doDownload() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) { setStatus('Вставьте ссылку'); return; }
+    setStatus('⏳ Скачиваю в лучшем качестве…');
+    try {
+      const r = await fetch(API + '/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+        body: JSON.stringify({ url })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      setStatus('✅ Скачано: ' + (data.size/1024/1024).toFixed(1) + ' МБ');
+      const row = addVideoRow(data.file, 'скачано · ' + (data.size/1024/1024).toFixed(1) + ' МБ', 'Готово');
+      addBtns(row, data.file);
+    } catch (e) { setStatus('❌ ' + e.message); }
+  }
+
+  // Кнопки под видео: Уникализировать / Скачать
+  function addBtns(row, file) {
+    const box = document.createElement('div');
+    box.style.cssText = 'display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap';
+    box.innerHTML =
+      '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">🎨 Уникализировать</button>' +
+      '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line)" ' +
+        'href="' + API + '/file/' + encodeURIComponent(file) + '" onclick="dlFile(event,this)">⬇ Скачать файл</a>';
+    box.querySelector('.btn-neon').onclick = () => doUniquify(row, file);
+    row.querySelector('.qmeta').appendChild(box);
+  }
+
+  async function dlFile(e, a) {
+    e.preventDefault();
+    try {
+      const r = await fetch(a.href, { headers: { 'Authorization': 'Bearer ' + token() } });
+      const b = await r.blob();
+      const u = URL.createObjectURL(b);
+      const t = document.createElement('a');
+      t.href = u; t.download = a.href.split('/').pop(); t.click();
+      URL.revokeObjectURL(u);
+    } catch (err) { setStatus('❌ ' + err.message); }
+  }
+
+  async function doUniquify(row, file) {
+    const howMany = prompt('Сколько версий видео прислать? (1–5)', '1');
+    if (!howMany) return;
+    const count = Math.max(1, Math.min(5, parseInt(howMany, 10) || 1));
+    row.querySelector('.pill').textContent = 'Обработка';
+    setStatus('⏳ Уникализирую ' + count + '…');
+    try {
+      const r = await fetch(API + '/uniquify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+        body: JSON.stringify({ file, count })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      row.querySelector('.pill').textContent = 'Готово';
+      setStatus('✅ Готово: ' + data.files.length + ' версий');
+      data.files.forEach((f, i) => {
+        const vr = addVideoRow(f, 'версия ' + (i+1) + ' из ' + data.files.length, 'Готово');
+        const box = document.createElement('div');
+        box.style.cssText = 'margin-top:.4rem';
+        box.innerHTML = '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line)" ' +
+          'href="' + API + '/file/' + encodeURIComponent(f) + '">⬇ Скачать</a>';
+        box.querySelector('a').onclick = (e) => dlFile(e, box.querySelector('a'));
+        vr.querySelector('.qmeta').appendChild(box);
+      });
+    } catch (e) { row.querySelector('.pill').textContent = 'Ошибка'; setStatus('❌ ' + e.message); }
+  }
+
+  // Загрузка файла
+  document.getElementById('fileInput').addEventListener('change', (ev) => {
+    const f = ev.target.files[0];
+    if (!f) return;
+    const sizeMb = (f.size/1024/1024).toFixed(1);
+    setStatus('⚠️ Загрузка файлов с сайта появится позже (пока — по ссылке).');
+    addVideoRow(f.name, sizeMb + ' МБ · локально', 'Локально');
+    ev.target.value = '';
   });
 </script>
 </body>
