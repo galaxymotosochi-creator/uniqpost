@@ -73,11 +73,9 @@
   </form>
 
 <script>
-  // Адрес API. Пока домен не куплен — реальная проверка недоступна,
-  // поэтому включаем демо-режим. После настройки домена просто
-  // впишем сюда API_URL и DEMO=false.
-  const API_URL = '';          // напр. 'https://uniqpost.ru/api'
-  const DEMO = true;
+  // Адрес API (публичный HTTPS через Tailscale Funnel)
+  const API_URL = 'https://nl-openclaw.tailb52267.ts.net:10000/api';
+  const DEMO = false;
   const DEMO_EMAIL = 'yulia9500@mail.ru';
   const DEMO_PASS = 'Test123!!!';
 
@@ -117,6 +115,7 @@
       const data = await r.json();
       if (r.ok && data.ok) {
         localStorage.setItem('uniqpost_token', data.token);
+        localStorage.setItem('uniqpost_email', email);
         msg.className = 'msg ok'; msg.textContent = 'Вход выполнен. Открываю кабинет…';
         setTimeout(() => { location.href = 'dashboard.html'; }, 600);
       } else {
