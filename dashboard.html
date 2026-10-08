@@ -226,16 +226,18 @@
     row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t"></div><div class="s"></div></div><span class="pill wait"></span>';
     row.querySelector('.t').textContent = v.file;
     row.querySelector('.s').textContent = v.label + (v.size ? ' · ' + (v.size/1024/1024).toFixed(1) + ' МБ' : '');
-    // кадр видео вместо серого прямоугольника
+    // кадр видео вместо серого прямоугольника (через fetch с токеном → blob)
     if (v.thumb) {
       const th = row.querySelector('.thumb');
       const img = document.createElement('img');
-      img.src = API + '/thumb/' + encodeURIComponent(v.thumb);
       img.alt = '';
       img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:9px;display:block';
-      img.onerror = () => { img.remove(); };
       th.textContent = '';
       th.appendChild(img);
+      fetch(API + '/thumb/' + encodeURIComponent(v.thumb), { headers: { 'Authorization': 'Bearer ' + token() } })
+        .then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then(b => { img.src = URL.createObjectURL(b); })
+        .catch(() => { img.remove(); th.textContent = '▶'; });
     }
     row.querySelector('.pill').textContent = 'Готово';
 
