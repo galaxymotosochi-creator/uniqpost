@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -204,15 +205,44 @@
   const token = () => localStorage.getItem('uniqpost_token') || '';
   const authH = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() });
 
-  // Охрана
-  if (!token()) { location.replace('login.html'); }
+  // ── Автовход через Telegram (Mini App) ──
+  // Если открыто внутри Telegram — входим по данным Telegram (без пароля и без потери токена)
+  function setUser(email, name) {
+    try {
+      localStorage.setItem('uniqpost_email', email || '');
+      const em = email || 'yulia9500@mail.ru';
+      document.getElementById('avatar').textContent = (em[0] || 'Ю').toUpperCase();
+      document.getElementById('uname').textContent = name || em;
+    } catch (e) {}
+  }
+
+  async function tgAutoLogin() {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (!tg || !tg.initData) return false;
+    try {
+      const r = await fetch(API + '/telegram-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: tg.initData })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.ok) return false;
+      localStorage.setItem('uniqpost_token', data.token);
+      localStorage.setItem('uniqpost_name', data.name || '');
+      setUser(data.email, data.name);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Охрана + автовход
+  (async () => {
+    if (token()) { setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name')); return; }
+    const ok = await tgAutoLogin();
+    if (!ok) { location.replace('login.html'); }
+  })();
 
   // Имя в шапке
-  try {
-    const em = localStorage.getItem('uniqpost_email') || 'yulia9500@mail.ru';
-    document.getElementById('avatar').textContent = (em[0] || 'Ю').toUpperCase();
-    document.getElementById('uname').textContent = em;
-  } catch (e) {}
+  setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name'));
 
   const workStatus = document.getElementById('workStatus');
   const setStatus = t => { workStatus.textContent = t || ''; };
@@ -364,6 +394,9 @@
     } catch (e) { setStatus(e.message); }
     ev.target.value = '';
   });
+
+  // Telegram: развернуть на весь экран
+  try { if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } } catch (e) {}
 
   // Старт: подтянуть список с сервера
   loadVideos();
