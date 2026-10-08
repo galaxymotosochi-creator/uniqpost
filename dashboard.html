@@ -412,23 +412,38 @@
   async function connectService(id) {
     if (id === 'telegram') {
       const st = document.getElementById('connectStatus');
-      st.textContent = 'Укажите @канал или ссылку t.me/…';
-      const ch = prompt('Канал Telegram (@username или https://t.me/…):', '@');
-      if (!ch) { st.textContent = ''; return; }
-      st.textContent = 'Подключаю…';
-      try {
-        const r = await fetch(API + '/connect/telegram', {
-          method: 'POST',
-          headers: authH(),
-          body: JSON.stringify({ channel: ch })
-        });
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.error || 'Ошибка');
-        st.textContent = 'Канал подключён: ' + data.username;
-        closeConnect();
-        loadAccounts();
-      } catch (e) { st.textContent = e.message; }
+      // свой ввод вместо браузерного prompt()
+      document.getElementById('svcList').innerHTML = `
+        <div style="margin-bottom:.7rem;font-size:.84rem;color:var(--muted)">Укажите канал Telegram</div>
+        <input id="tgInput" type="text" placeholder="@канал или https://t.me/…"
+          style="width:100%;padding:.72rem .85rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none">
+        <div style="display:flex;gap:.5rem;margin-top:.8rem">
+          <button class="btn btn-neon" style="flex:1" onclick="submitTelegram()">Подключить</button>
+        </div>`;
+      st.textContent = '';
+      setTimeout(() => { const i = document.getElementById('tgInput'); if (i) { i.focus(); i.addEventListener('keydown', e => { if (e.key === 'Enter') submitTelegram(); }); } }, 50);
+      return;
     }
+  }
+
+  async function submitTelegram() {
+    const st = document.getElementById('connectStatus');
+    const inp = document.getElementById('tgInput');
+    const ch = (inp && inp.value || '').trim();
+    if (!ch) { st.textContent = 'Введите канал'; return; }
+    st.textContent = 'Подключаю…';
+    try {
+      const r = await fetch(API + '/connect/telegram', {
+        method: 'POST',
+        headers: authH(),
+        body: JSON.stringify({ channel: ch })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      st.textContent = 'Канал подключён: ' + data.username;
+      closeConnect();
+      loadAccounts();
+    } catch (e) { st.textContent = e.message; }
   }
 
   async function loadAccounts() {
