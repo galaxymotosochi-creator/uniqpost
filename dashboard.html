@@ -209,6 +209,17 @@
     .nav { padding:.85rem 1rem; gap:.8rem; }
   }
 </style>
+<script>
+  // Демо-охрана: если не входил — на страницу входа.
+  // (Позже заменим на проверку токена через API)
+  if (localStorage.getItem('uniqpost_demo_auth') !== '1' && !localStorage.getItem('uniqpost_token')) {
+    location.replace('login.html');
+  }
+</script>
+<style>
+  .logout-btn { border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:100px; padding:.5rem 1rem; font-family:var(--font); font-size:.8rem; font-weight:600; cursor:pointer; transition:all .18s; }
+  .logout-btn:hover { color:var(--text); border-color:var(--neon); }
+</style>
 </head>
 <body>
 
@@ -224,6 +235,7 @@
   <div class="nav-right">
     <button class="btn btn-ghost" onclick="location.href='login.html'">Войти</button>
     <button class="btn btn-neon" onclick="location.href='login.html'">Начать бесплатно</button>
+    <button class="logout-btn" onclick="localStorage.clear();location.href='login.html'">Выйти</button>
   </div>
 </nav>
 
@@ -292,7 +304,7 @@
       <h1>Обзор</h1>
       <p>Ваши публикации и очередь на сегодня</p>
     </div>
-    <button class="btn btn-neon">+ Загрузить видео</button>
+    <button class="btn btn-neon" onclick="location.href='login.html'">+ Загрузить видео</button>
   </div>
 
   <div class="stats">
