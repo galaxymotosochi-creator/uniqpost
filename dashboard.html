@@ -75,9 +75,10 @@
   .badge { font-size:.68rem; padding:.2rem .55rem; border-radius:100px; font-weight:600; border:1px solid var(--line); color:var(--muted); }
   .badge.on { color:var(--neon-2); border-color:rgba(47,123,255,.4); background:var(--neon-soft); }
 
-  .qitem { display:flex; gap:.75rem; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--line); }
+  .qitem { display:flex; gap:.75rem; align-items:flex-start; padding:.65rem 0; border-bottom:1px solid var(--line); }
   .qitem:last-child { border-bottom:none; }
-  .thumb { width:74px; height:48px; border-radius:9px; flex:none; background:repeating-linear-gradient(135deg,#141a26,#141a26 8px,#0e1320 8px,#0e1320 16px); border:1px solid var(--line); display:grid; place-items:center; color:var(--muted); font-size:.9rem; }
+  .thumb { width:74px; height:48px; min-width:74px; max-width:74px; flex:0 0 74px; border-radius:9px; overflow:hidden; background:repeating-linear-gradient(135deg,#141a26,#141a26 8px,#0e1320 8px,#0e1320 16px); border:1px solid var(--line); display:grid; place-items:center; color:var(--muted); font-size:.9rem; align-self:flex-start; }
+  .thumb img { width:74px !important; height:48px !important; object-fit:cover; display:block; border-radius:9px; }
   .qmeta { flex:1; min-width:0; }
   .qmeta .t { font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .qmeta .s { font-size:.74rem; color:var(--muted); margin-top:.15rem; }
