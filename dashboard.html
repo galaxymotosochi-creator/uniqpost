@@ -197,6 +197,7 @@
 <script>
   const API = 'https://nl-openclaw.tailb52267.ts.net:10000/api';
   const token = () => localStorage.getItem('uniqpost_token') || '';
+  const authH = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() });
 
   // Охрана
   if (!token()) { location.replace('login.html'); }
@@ -211,53 +212,106 @@
   const workStatus = document.getElementById('workStatus');
   const setStatus = t => { workStatus.textContent = t || ''; };
 
-  function addVideoRow(name, sub, pill) {
+  // ── Отрисовка одной записи видео ──
+  function renderRow(v) {
     const list = document.getElementById('videoList');
     const emptyEl = list.querySelector('.empty');
     if (emptyEl) emptyEl.remove();
+    // не дублируем
+    if (list.querySelector('[data-id="' + v.id + '"]')) return;
+
     const row = document.createElement('div');
     row.className = 'qitem';
-    row.dataset.name = name;
+    row.dataset.id = v.id;
     row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t"></div><div class="s"></div></div><span class="pill wait"></span>';
-    row.querySelector('.t').textContent = name;
-    row.querySelector('.s').textContent = sub;
-    row.querySelector('.pill').textContent = pill;
+    row.querySelector('.t').textContent = v.file;
+    row.querySelector('.s').textContent = v.label + (v.size ? ' · ' + (v.size/1024/1024).toFixed(1) + ' МБ' : '');
+    row.querySelector('.pill').textContent = 'Готово';
+
+    const box = document.createElement('div');
+    box.style.cssText = 'display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap';
+    let html = '';
+    if (v.type === 'original') {
+      html += '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">🎨 Уникализировать</button>';
+    }
+    html += '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line)" ' +
+            'href="' + API + '/file/' + encodeURIComponent(v.file) + '">⬇ Скачать</a>' +
+            '<button class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);color:#ff6b6b">✕ Удалить</button>';
+    box.innerHTML = html;
+    const uqBtn = box.querySelector('.btn-neon');
+    if (uqBtn) uqBtn.onclick = () => doUniquify(v.file);
+    box.querySelector('a').onclick = (e) => dlFile(e, box.querySelector('a'));
+    box.querySelector('button:last-child').onclick = () => delVideo(v.id);
+    row.querySelector('.qmeta').appendChild(box);
+
     list.prepend(row);
     document.getElementById('statVid').textContent = list.querySelectorAll('.qitem').length;
-    return row;
   }
 
-  // Скачать по ссылке
+  // ── Загрузка списка с сервера ──
+  async function loadVideos() {
+    try {
+      const r = await fetch(API + '/videos', { headers: authH() });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      const list = document.getElementById('videoList');
+      list.querySelectorAll('.qitem').forEach(e => e.remove());
+      if (!data.videos.length) {
+        if (!list.querySelector('.empty')) list.innerHTML = '<div class="empty"><div class="ic">🎞</div><p>Видео пока нет</p><small>Загрузите первое видео или вставьте ссылку</small></div>';
+      } else {
+        data.videos.slice().reverse().forEach(renderRow);
+      }
+      document.getElementById('statVid').textContent = data.videos.length;
+    } catch (e) { setStatus('❌ ' + e.message); }
+  }
+
+  // ── Скачать по ссылке ──
   async function doDownload() {
     const url = document.getElementById('urlInput').value.trim();
     if (!url) { setStatus('Вставьте ссылку'); return; }
     setStatus('⏳ Скачиваю в лучшем качестве…');
     try {
-      const r = await fetch(API + '/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
-        body: JSON.stringify({ url })
-      });
+      const r = await fetch(API + '/download', { method: 'POST', headers: authH(), body: JSON.stringify({ url }) });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Ошибка');
       setStatus('✅ Скачано: ' + (data.size/1024/1024).toFixed(1) + ' МБ');
-      const row = addVideoRow(data.file, 'Оригинал видео · ' + (data.size/1024/1024).toFixed(1) + ' МБ', 'Готово');
-      addBtns(row, data.file);
+      document.getElementById('urlInput').value = '';
+      if (data.rec) renderRow(data.rec);
+      else await loadVideos();
     } catch (e) { setStatus('❌ ' + e.message); }
   }
 
-  // Кнопки под видео: Уникализировать / Скачать
-  function addBtns(row, file) {
-    const box = document.createElement('div');
-    box.style.cssText = 'display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap';
-    box.innerHTML =
-      '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">🎨 Уникализировать</button>' +
-      '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line)" ' +
-        'href="' + API + '/file/' + encodeURIComponent(file) + '" onclick="dlFile(event,this)">⬇ Скачать файл</a>';
-    box.querySelector('.btn-neon').onclick = () => doUniquify(row, file);
-    row.querySelector('.qmeta').appendChild(box);
+  // ── Уникализировать ──
+  async function doUniquify(file) {
+    const howMany = prompt('Сколько версий видео прислать? (1–5)', '1');
+    if (!howMany) return;
+    const count = Math.max(1, Math.min(5, parseInt(howMany, 10) || 1));
+    setStatus('⏳ Уникализирую ' + count + '…');
+    try {
+      const r = await fetch(API + '/uniquify', { method: 'POST', headers: authH(), body: JSON.stringify({ file, count }) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      setStatus('✅ Готово: ' + data.files.length + ' версий');
+      await loadVideos();
+    } catch (e) { setStatus('❌ ' + e.message); }
   }
 
+  // ── Удалить видео ──
+  async function delVideo(id) {
+    if (!confirm('Удалить это видео?')) return;
+    try {
+      const r = await fetch(API + '/videos/delete', { method: 'POST', headers: authH(), body: JSON.stringify({ id }) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      const row = document.querySelector('[data-id="' + id + '"]');
+      if (row) row.remove();
+      const list = document.getElementById('videoList');
+      if (!list.querySelector('.qitem')) list.innerHTML = '<div class="empty"><div class="ic">🎞</div><p>Видео пока нет</p><small>Загрузите первое видео или вставьте ссылку</small></div>';
+      document.getElementById('statVid').textContent = list.querySelectorAll('.qitem').length;
+    } catch (e) { setStatus('❌ ' + e.message); }
+  }
+
+  // ── Скачать файл ──
   async function dlFile(e, a) {
     e.preventDefault();
     try {
@@ -270,43 +324,16 @@
     } catch (err) { setStatus('❌ ' + err.message); }
   }
 
-  async function doUniquify(row, file) {
-    const howMany = prompt('Сколько версий видео прислать? (1–5)', '1');
-    if (!howMany) return;
-    const count = Math.max(1, Math.min(5, parseInt(howMany, 10) || 1));
-    row.querySelector('.pill').textContent = 'Обработка';
-    setStatus('⏳ Уникализирую ' + count + '…');
-    try {
-      const r = await fetch(API + '/uniquify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
-        body: JSON.stringify({ file, count })
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || 'Ошибка');
-      row.querySelector('.pill').textContent = 'Готово';
-      setStatus('✅ Готово: ' + data.files.length + ' версий');
-      data.files.forEach((f, i) => {
-        const vr = addVideoRow(f, 'Уникализация № ' + (i+1), 'Готово');
-        const box = document.createElement('div');
-        box.style.cssText = 'margin-top:.4rem';
-        box.innerHTML = '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line)" ' +
-          'href="' + API + '/file/' + encodeURIComponent(f) + '">⬇ Скачать</a>';
-        box.querySelector('a').onclick = (e) => dlFile(e, box.querySelector('a'));
-        vr.querySelector('.qmeta').appendChild(box);
-      });
-    } catch (e) { row.querySelector('.pill').textContent = 'Ошибка'; setStatus('❌ ' + e.message); }
-  }
-
-  // Загрузка файла
+  // Загрузка локального файла — подсказка (пока только по ссылке)
   document.getElementById('fileInput').addEventListener('change', (ev) => {
     const f = ev.target.files[0];
     if (!f) return;
-    const sizeMb = (f.size/1024/1024).toFixed(1);
     setStatus('⚠️ Загрузка файлов с сайта появится позже (пока — по ссылке).');
-    addVideoRow(f.name, 'Оригинал видео · ' + sizeMb + ' МБ', 'Локально');
     ev.target.value = '';
   });
+
+  // Старт: подтянуть список с сервера
+  loadVideos();
 </script>
 </body>
 </html>
