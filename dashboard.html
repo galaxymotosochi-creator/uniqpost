@@ -231,7 +231,8 @@
       const th = row.querySelector('.thumb');
       const img = document.createElement('img');
       img.src = API + '/thumb/' + encodeURIComponent(v.thumb);
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:9px';
+      img.alt = '';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:9px;display:block';
       img.onerror = () => { img.remove(); };
       th.textContent = '';
       th.appendChild(img);
