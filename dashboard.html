@@ -3,135 +3,83 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uniqpost — превью</title>
+<title>Uniqpost — Кабинет</title>
 <style>
   :root {
-    --bg: #07080c;
-    --panel: #0c0f16;
-    --panel-2: #10141d;
-    --line: rgba(60,130,255,.16);
-    --neon: #2f7bff;
-    --neon-2: #58a6ff;
-    --neon-soft: rgba(47,123,255,.14);
-    --text: #e8ecf4;
-    --muted: #7c8699;
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --bg:#07080c; --panel:#0c0f16; --panel-2:#10141d;
+    --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height:100vh;
+    font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh;
     background-image:
       radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
       radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);
-    background-attachment: fixed;
+    background-attachment:fixed;
   }
-  a { color: inherit; text-decoration: none; }
+  a { color:inherit; text-decoration:none; }
+  .btn { border:none; border-radius:100px; padding:.55rem 1.15rem; font-family:var(--font); font-size:.82rem; font-weight:600; cursor:pointer; transition:all .18s; }
+  .btn-ghost { background:transparent; color:var(--muted); }
+  .btn-ghost:hover { color:var(--text); }
+  .btn-neon { background:linear-gradient(135deg,#2f7bff,#0d4ea8); color:#fff; box-shadow:0 0 18px rgba(47,123,255,.45),0 6px 22px -8px rgba(47,123,255,.7); }
+  .btn-neon:hover { box-shadow:0 0 28px rgba(47,123,255,.7),0 8px 26px -8px rgba(47,123,255,.9); transform:translateY(-1px); }
+  .logout-btn { border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:100px; padding:.5rem 1rem; font-family:var(--font); font-size:.8rem; font-weight:600; cursor:pointer; transition:all .18s; }
+  .logout-btn:hover { color:var(--text); border-color:var(--neon); }
 
   /* ── Верхняя навигация ── */
   .nav {
-    display:flex; align-items:center; gap:1.6rem;
-    padding: 1rem 1.8rem;
-    border-bottom:1px solid var(--line);
-    backdrop-filter: blur(12px);
-    position: sticky; top:0; z-index:50;
-    background: rgba(7,8,12,.72);
+    display:flex; align-items:center; gap:1.6rem; padding:1rem 1.8rem;
+    border-bottom:1px solid var(--line); backdrop-filter:blur(12px);
+    position:sticky; top:0; z-index:50; background:rgba(7,8,12,.72);
   }
   .brand { display:flex; align-items:center; gap:.55rem; font-weight:800; font-size:1.05rem; letter-spacing:-.02em; }
-  .brand .dot {
-    width:11px; height:11px; border-radius:50%;
-    background: var(--neon);
-    box-shadow: 0 0 12px var(--neon), 0 0 22px rgba(47,123,255,.6);
-    animation: pulse 2.4s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100%{opacity:.65; transform:scale(.92)} 50%{opacity:1; transform:scale(1.08)} }
+  .brand .dot { width:11px; height:11px; border-radius:50%; background:var(--neon); box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6); animation:pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.65;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
   .nav-links { display:flex; gap:1.4rem; font-size:.86rem; color:var(--muted); margin-left:1rem; }
-  .nav-links span { cursor:pointer; transition:color .18s; }
+  .nav-links span { cursor:pointer; transition:color .18s; padding-bottom:2px; }
   .nav-links span:hover { color:var(--text); }
-  .nav-links .active { color:var(--neon-2); }
-  .nav-right { margin-left:auto; display:flex; align-items:center; gap:.8rem; }
-  .btn {
-    border:none; border-radius:100px; padding:.55rem 1.15rem; font-family:var(--font);
-    font-size:.82rem; font-weight:600; cursor:pointer; transition:all .18s;
-  }
-  .btn-ghost { background:transparent; color:var(--muted); }
-  .btn-ghost:hover { color:var(--text); }
-  .btn-neon {
-    background: linear-gradient(135deg,#2f7bff,#0d4ea8); color:#fff;
-    box-shadow: 0 0 18px rgba(47,123,255,.45), 0 6px 22px -8px rgba(47,123,255,.7);
-  }
-  .btn-neon:hover { box-shadow: 0 0 28px rgba(47,123,255,.7), 0 8px 26px -8px rgba(47,123,255,.9); transform:translateY(-1px); }
+  .nav-links .active { color:var(--neon-2); border-bottom:2px solid var(--neon); }
+  .nav-right { margin-left:auto; display:flex; align-items:center; gap:.7rem; }
+  .user-chip { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:var(--muted); }
+  .user-chip .av { width:28px; height:28px; border-radius:50%; background:var(--neon-soft); border:1px solid var(--line); display:grid; place-items:center; font-size:.8rem; color:var(--neon-2); font-weight:700; }
 
-  /* ── Общий layout ── */
-  .wrap { max-width:1180px; margin:0 auto; padding: 2.2rem 1.8rem 4rem; }
+  .wrap { max-width:1180px; margin:0 auto; padding:2.2rem 1.8rem 4rem; }
   .head { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.6rem; flex-wrap:wrap; }
   .head h1 { font-size:1.7rem; font-weight:800; letter-spacing:-.025em; }
   .head p { color:var(--muted); font-size:.88rem; margin-top:.35rem; }
 
-  /* ── Карточки статистики ── */
   .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.9rem; margin-bottom:1.5rem; }
-  .stat {
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border:1px solid var(--line); border-radius:16px; padding:1.05rem 1.15rem;
-    position:relative; overflow:hidden;
-  }
-  .stat:before {
-    content:""; position:absolute; inset:0 auto auto 0; width:100%; height:1px;
-    background: linear-gradient(90deg, transparent, rgba(47,123,255,.5), transparent);
-  }
+  .stat { background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:16px; padding:1.05rem 1.15rem; position:relative; overflow:hidden; }
+  .stat:before { content:""; position:absolute; inset:0 auto auto 0; width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(47,123,255,.5),transparent); }
   .stat .lbl { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
   .stat .val { font-size:1.6rem; font-weight:800; margin-top:.35rem; letter-spacing:-.02em; }
   .stat .val em { font-style:normal; color:var(--neon-2); }
   .stat .sub { color:var(--muted); font-size:.72rem; margin-top:.2rem; }
 
-  /* ── Панели ── */
-  .grid { display:grid; grid-template-columns: 1.6fr 1fr; gap:1.2rem; }
-  .card {
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
-    border:1px solid var(--line); border-radius:18px; padding:1.3rem 1.4rem;
-  }
+  .grid { display:grid; grid-template-columns:1.6fr 1fr; gap:1.2rem; }
+  .card { background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:18px; padding:1.3rem 1.4rem; }
   .card h2 { font-size:1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
   .card h2 .tick { width:6px; height:6px; border-radius:50%; background:var(--neon); box-shadow:0 0 10px var(--neon); }
 
-  /* загрузка */
-  .drop {
-    border:1.5px dashed rgba(60,130,255,.35); border-radius:14px;
-    padding:1.8rem 1rem; text-align:center; cursor:pointer; transition:all .2s;
-    background: rgba(47,123,255,.03);
-  }
+  .drop { border:1.5px dashed rgba(60,130,255,.35); border-radius:14px; padding:1.8rem 1rem; text-align:center; cursor:pointer; transition:all .2s; background:rgba(47,123,255,.03); }
   .drop:hover { border-color:var(--neon); background:var(--neon-soft); box-shadow:0 0 24px rgba(47,123,255,.14) inset; }
   .drop .ic { font-size:1.6rem; }
   .drop p { margin-top:.5rem; font-size:.86rem; }
   .drop small { color:var(--muted); font-size:.75rem; }
 
-  /* расписание строки */
   .sched { margin-top:1.2rem; }
-  .sched-row {
-    display:flex; align-items:center; gap:.7rem; padding:.7rem .8rem; border-radius:12px;
-    border:1px solid var(--line); margin-bottom:.55rem; background:rgba(255,255,255,.012);
-  }
+  .sched-row { display:flex; align-items:center; gap:.7rem; padding:.7rem .8rem; border-radius:12px; border:1px solid var(--line); margin-bottom:.55rem; background:rgba(255,255,255,.012); }
   .acc { display:flex; align-items:center; gap:.45rem; font-size:.82rem; }
-  .acc .ic {
-    width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-size:.8rem;
-    background:var(--neon-soft); border:1px solid var(--line);
-  }
-  .time { margin-left:auto; font-variant-numeric: tabular-nums; font-size:.82rem; color:var(--neon-2); font-weight:600; }
-  .badge {
-    font-size:.68rem; padding:.2rem .55rem; border-radius:100px; font-weight:600;
-    border:1px solid var(--line); color:var(--muted);
-  }
+  .acc .ic { width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-size:.8rem; background:var(--neon-soft); border:1px solid var(--line); }
+  .time { margin-left:auto; font-variant-numeric:tabular-nums; font-size:.82rem; color:var(--neon-2); font-weight:600; }
+  .badge { font-size:.68rem; padding:.2rem .55rem; border-radius:100px; font-weight:600; border:1px solid var(--line); color:var(--muted); }
   .badge.on { color:var(--neon-2); border-color:rgba(47,123,255,.4); background:var(--neon-soft); }
 
-  /* очередь */
   .qitem { display:flex; gap:.75rem; align-items:center; padding:.65rem 0; border-bottom:1px solid var(--line); }
   .qitem:last-child { border-bottom:none; }
-  .thumb {
-    width:74px; height:48px; border-radius:9px; flex:none;
-    background: repeating-linear-gradient(135deg,#141a26,#141a26 8px,#0e1320 8px,#0e1320 16px);
-    border:1px solid var(--line); display:grid; place-items:center; color:var(--muted); font-size:.9rem;
-  }
+  .thumb { width:74px; height:48px; border-radius:9px; flex:none; background:repeating-linear-gradient(135deg,#141a26,#141a26 8px,#0e1320 8px,#0e1320 16px); border:1px solid var(--line); display:grid; place-items:center; color:var(--muted); font-size:.9rem; }
   .qmeta { flex:1; min-width:0; }
   .qmeta .t { font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .qmeta .s { font-size:.74rem; color:var(--muted); margin-top:.15rem; }
@@ -140,171 +88,65 @@
   .pill.wait { color:var(--neon-2); border:1px solid rgba(47,123,255,.35); background:var(--neon-soft); }
   .pill.proc { color:#ffcf5b; border:1px solid rgba(255,207,91,.35); background:rgba(255,207,91,.08); }
 
-  /* полоса прогресса */
   .bar { height:6px; border-radius:100px; background:rgba(255,255,255,.06); overflow:hidden; margin-top:1rem; }
-  .bar i { display:block; height:100%; width:68%; border-radius:100px;
-    background:linear-gradient(90deg,#0d4ea8,#2f7bff,#58a6ff);
-    box-shadow:0 0 14px rgba(47,123,255,.7); animation: grow 3s ease-in-out infinite alternate; }
+  .bar i { display:block; height:100%; width:68%; border-radius:100px; background:linear-gradient(90deg,#0d4ea8,#2f7bff,#58a6ff); box-shadow:0 0 14px rgba(47,123,255,.7); animation:grow 3s ease-in-out infinite alternate; }
   @keyframes grow { from{width:52%} to{width:78%} }
 
-  /* ── Лендинг-часть (герой) ── */
-  .hero { text-align:center; padding:3.4rem 1rem 2.4rem; }
-  .hero .kicker {
-    display:inline-flex; align-items:center; gap:.5rem; font-size:.76rem; color:var(--neon-2);
-    border:1px solid rgba(47,123,255,.35); background:var(--neon-soft);
-    border-radius:100px; padding:.35rem .85rem; margin-bottom:1.2rem; font-weight:600;
-  }
-  .hero h1 { font-size:2.7rem; font-weight:800; letter-spacing:-.035em; line-height:1.1; }
-  .hero h1 em {
-    font-style:normal; color:var(--neon-2);
-    text-shadow:0 0 22px rgba(47,123,255,.6);
-  }
-  .hero p { color:var(--muted); max-width:560px; margin:1rem auto 0; font-size:.95rem; line-height:1.55; }
-  .hero .cta { display:flex; gap:.7rem; justify-content:center; margin-top:1.7rem; flex-wrap:wrap; }
-  .float {
-    margin:2.6rem auto 0; max-width:940px; border-radius:20px; border:1px solid var(--line);
-    background: linear-gradient(180deg, rgba(16,20,29,.9), rgba(12,15,22,.9));
-    box-shadow: 0 40px 90px -40px rgba(47,123,255,.35), 0 0 0 1px rgba(47,123,255,.06);
-    padding:1.4rem; text-align:left;
-  }
-  .feat { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:2.4rem; }
-  .feat .f {
-    border:1px solid var(--line); border-radius:16px; padding:1.15rem 1.2rem;
-    background:linear-gradient(180deg,var(--panel-2),var(--panel));
-  }
-  .feat .f .ic { font-size:1.25rem; }
-  .feat .f h3 { font-size:.92rem; margin:.55rem 0 .35rem; }
-  .feat .f p { color:var(--muted); font-size:.8rem; line-height:1.5; }
-
-  .sep { margin:3rem 0 1.6rem; display:flex; align-items:center; gap:1rem; color:var(--muted); font-size:.74rem; text-transform:uppercase; letter-spacing:.14em; }
-  .sep:before, .sep:after { content:""; flex:1; height:1px; background:var(--line); }
+  .feed { margin-top:1.2rem; }
+  .feed-item { display:flex; gap:.7rem; align-items:flex-start; padding:.7rem 0; border-bottom:1px solid var(--line); }
+  .feed-item:last-child { border-bottom:none; }
+  .feed-item .dot2 { width:8px; height:8px; border-radius:50%; background:var(--neon); box-shadow:0 0 8px var(--neon); margin-top:.35rem; flex:none; }
+  .feed-item .tx { font-size:.82rem; }
+  .feed-item .tm { font-size:.72rem; color:var(--muted); margin-top:.15rem; }
 
   footer { text-align:center; color:var(--muted); font-size:.76rem; padding:2rem 0 0; }
 
-  @media (max-width: 900px) {
+  @media (max-width:900px) {
     .stats { grid-template-columns:repeat(2,1fr); }
     .grid { grid-template-columns:1fr; }
-    .feat { grid-template-columns:1fr; }
     .nav-links { display:none; }
-    .hero h1 { font-size:2rem; }
   }
-
-  /* Мобилка: убираем съезжание сеток и фиксированные ширины */
-  @media (max-width: 640px) {
-    .wrap { padding: 1.4rem 1rem 3rem; }
-    .hero { padding: 2rem .6rem 1.6rem; }
-    .hero h1 { font-size:1.7rem; }
-    .hero p { font-size:.88rem; }
+  @media (max-width:640px) {
+    .wrap { padding:1.4rem 1rem 3rem; }
     .stats { grid-template-columns:1fr; gap:.7rem; }
-    .grid { grid-template-columns:1fr; gap:.9rem; }
+    .grid { gap:.9rem; }
     .card { padding:1.05rem 1rem; }
-    .float { margin-top:1.6rem; padding:1rem; border-radius:16px; max-width:100%; }
-    .feat { gap:.8rem; margin-top:1.6rem; }
     .sched-row { flex-wrap:wrap; gap:.5rem; padding:.6rem .65rem; }
     .sched-row .time { margin-left:0; width:100%; }
-    .qitem { gap:.55rem; }
     .thumb { width:60px; height:40px; }
-    .cat, .stat .val, .head h1 { font-size:1.35rem; }
-    .head { gap:.6rem; }
+    .head h1 { font-size:1.35rem; }
     .nav { padding:.85rem 1rem; gap:.8rem; }
+    .user-chip span.uname { display:none; }
   }
-</style>
-<script>
-  // Демо-охрана: если не входил — на страницу входа.
-  // (Позже заменим на проверку токена через API)
-  if (localStorage.getItem('uniqpost_demo_auth') !== '1' && !localStorage.getItem('uniqpost_token')) {
-    location.replace('login.html');
-  }
-</script>
-<style>
-  .logout-btn { border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:100px; padding:.5rem 1rem; font-family:var(--font); font-size:.8rem; font-weight:600; cursor:pointer; transition:all .18s; }
-  .logout-btn:hover { color:var(--text); border-color:var(--neon); }
 </style>
 </head>
 <body>
 
-<!-- ───────────────── ЛЕНДИНГ ───────────────── -->
 <nav class="nav">
   <div class="brand"><span class="dot"></span> uniqpost</div>
   <div class="nav-links">
     <span class="active">Обзор</span>
-    <span>Возможности</span>
-    <span>Тарифы</span>
-    <span>Вход</span>
+    <span>Видео</span>
+    <span>Аккаунты</span>
+    <span>Расписание</span>
+    <span>Настройки</span>
   </div>
   <div class="nav-right">
-    <button class="btn btn-ghost" onclick="location.href='login.html'">Войти</button>
-    <button class="btn btn-neon" onclick="location.href='login.html'">Начать бесплатно</button>
+    <div class="user-chip">
+      <span class="av" id="avatar">Ю</span>
+      <span class="uname" id="uname">Кабинет</span>
+    </div>
     <button class="logout-btn" onclick="localStorage.clear();location.href='login.html'">Выйти</button>
   </div>
 </nav>
 
 <div class="wrap">
-
-  <div class="hero">
-    <div class="kicker">⚡ уникализация + автопостинг</div>
-    <h1>Один раз загрузил — <em>везде опубликовал</em></h1>
-    <p>Уникализируй видео и публикуй по расписанию сразу в Instagram, Facebook, VK и Telegram. Один аккаунт или тридцать — система сама сделает каждый ролик уникальным.</p>
-    <div class="cta">
-      <button class="btn btn-neon" style="padding:.75rem 1.6rem; font-size:.9rem;" onclick="location.href='login.html'">Подключить аккаунты</button>
-      <button class="btn btn-ghost" style="padding:.75rem 1.4rem; font-size:.9rem;">▶ Как это работает</button>
-    </div>
-
-    <div class="float">
-      <div class="grid">
-        <div class="card">
-          <h2><span class="tick"></span> Расписание публикаций</h2>
-          <div class="drop">
-            <div class="ic">🎬</div>
-            <p>Перетащите видео или вставьте ссылку</p>
-            <small>MP4, MOV · TikTok, YouTube, Instagram, VK</small>
-          </div>
-          <div class="sched">
-            <div class="sched-row">
-              <div class="acc"><span class="ic">📷</span> @brand.main</div>
-              <span class="badge on">Автоуникализация</span>
-              <span class="time">12:00 · 18:30</span>
-            </div>
-            <div class="sched-row">
-              <div class="acc"><span class="ic">📘</span> Facebook · Brand</div>
-              <span class="badge on">Автоуникализация</span>
-              <span class="time">13:15 · 19:45</span>
-            </div>
-            <div class="sched-row">
-              <div class="acc"><span class="ic">🅥</span> VK · Brand</div>
-              <span class="badge">Оригинал</span>
-              <span class="time">10:00</span>
-            </div>
-          </div>
-          <div class="bar"><i></i></div>
-        </div>
-
-        <div class="card">
-          <h2><span class="tick"></span> Очередь</h2>
-          <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">reel_summer_01.mp4</div><div class="s">3 версии · Instagram ×2</div></div><span class="pill proc">Обработка</span></div>
-          <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">tiktok_0891.mp4</div><div class="s">по расписанию 18:30</div></div><span class="pill wait">В очереди</span></div>
-          <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">promo_reel.mp4</div><div class="s">5 версий · опубликовано</div></div><span class="pill done">Готово</span></div>
-          <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">story_clip.mp4</div><div class="s">2 версии · VK</div></div><span class="pill done">Готово</span></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="feat">
-      <div class="f"><div class="ic">🎨</div><h3>Уникализация 1–5 версий</h3><p>Метаданные, микро-смена скорости, цвета, шум, звук. Каждый ролик — уникальный.</p></div>
-      <div class="f"><div class="ic">📅</div><h3>Расписание</h3><p>Загрузил один раз — публикуется само в нужные часы, дни и очереди.</p></div>
-      <div class="f"><div class="ic">🔗</div><h3>Много аккаунтов</h3><p>Подключай Instagram, Facebook, VK, Telegram. Управляй всеми из одного кабинета.</p></div>
-    </div>
-  </div>
-
-  <div class="sep">Личный кабинет</div>
-
-  <!-- ───────────────── КАБИНЕТ ───────────────── -->
   <div class="head">
     <div>
       <h1>Обзор</h1>
       <p>Ваши публикации и очередь на сегодня</p>
     </div>
-    <button class="btn btn-neon" onclick="location.href='login.html'">+ Загрузить видео</button>
+    <button class="btn btn-neon">+ Загрузить видео</button>
   </div>
 
   <div class="stats">
@@ -315,6 +157,43 @@
   </div>
 
   <div class="grid">
+    <div class="card">
+      <h2><span class="tick"></span> Расписание публикаций</h2>
+      <div class="drop">
+        <div class="ic">🎬</div>
+        <p>Перетащите видео или вставьте ссылку</p>
+        <small>MP4, MOV · TikTok, YouTube, Instagram, VK</small>
+      </div>
+      <div class="sched">
+        <div class="sched-row">
+          <div class="acc"><span class="ic">📷</span> @brand.main</div>
+          <span class="badge on">Автоуникализация</span>
+          <span class="time">12:00 · 18:30</span>
+        </div>
+        <div class="sched-row">
+          <div class="acc"><span class="ic">📘</span> Facebook · Brand</div>
+          <span class="badge on">Автоуникализация</span>
+          <span class="time">13:15 · 19:45</span>
+        </div>
+        <div class="sched-row">
+          <div class="acc"><span class="ic">🅥</span> VK · Brand</div>
+          <span class="badge">Оригинал</span>
+          <span class="time">10:00</span>
+        </div>
+      </div>
+      <div class="bar"><i></i></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tick"></span> Очередь</h2>
+      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">reel_summer_01.mp4</div><div class="s">3 версии · Instagram ×2</div></div><span class="pill proc">Обработка</span></div>
+      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">tiktok_0891.mp4</div><div class="s">по расписанию 18:30</div></div><span class="pill wait">В очереди</span></div>
+      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">promo_reel.mp4</div><div class="s">5 версий · опубликовано</div></div><span class="pill done">Готово</span></div>
+      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">story_clip.mp4</div><div class="s">2 версии · VK</div></div><span class="pill done">Готово</span></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:1.2rem">
     <div class="card">
       <h2><span class="tick"></span> Мои аккаунты</h2>
       <div class="sched">
@@ -334,8 +213,31 @@
     </div>
   </div>
 
-  <footer>uniqpost — превью интерфейса · тёмная тема, синие неоновые акценты</footer>
+  <div class="card" style="margin-top:1.2rem">
+    <h2><span class="tick"></span> Последние события</h2>
+    <div class="feed">
+      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Видео <b>reel_summer_01.mp4</b> — создано 3 уникальные версии</div><div class="tm">12 минут назад</div></div></div>
+      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Опубликовано в <b>Instagram @brand.shop</b></div><div class="tm">1 час назад</div></div></div>
+      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Подключён аккаунт <b>VK · Brand</b></div><div class="tm">сегодня, 09:14</div></div></div>
+      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Скачано по ссылке <b>TikTok</b> в лучшем качестве</div><div class="tm">вчера, 21:40</div></div></div>
+    </div>
+  </div>
+
+  <footer>uniqpost — личный кабинет · демо-данные</footer>
 </div>
 
+<script>
+  // Охрана: без входа — на страницу входа
+  if (localStorage.getItem('uniqpost_demo_auth') !== '1' && !localStorage.getItem('uniqpost_token')) {
+    location.replace('login.html');
+  }
+  // Имя пользователя в шапке
+  try {
+    const em = localStorage.getItem('uniqpost_email') || 'yulia9500@mail.ru';
+    const ch = em[0] ? em[0].toUpperCase() : 'Ю';
+    document.getElementById('avatar').textContent = ch;
+    document.getElementById('uname').textContent = em;
+  } catch (e) {}
+</script>
 </body>
 </html>
