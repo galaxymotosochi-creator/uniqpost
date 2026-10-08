@@ -19,7 +19,6 @@
       radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);
     background-attachment:fixed;
   }
-  a { color:inherit; text-decoration:none; }
   .btn { border:none; border-radius:100px; padding:.55rem 1.15rem; font-family:var(--font); font-size:.82rem; font-weight:600; cursor:pointer; transition:all .18s; }
   .btn-ghost { background:transparent; color:var(--muted); }
   .btn-ghost:hover { color:var(--text); }
@@ -28,12 +27,7 @@
   .logout-btn { border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:100px; padding:.5rem 1rem; font-family:var(--font); font-size:.8rem; font-weight:600; cursor:pointer; transition:all .18s; }
   .logout-btn:hover { color:var(--text); border-color:var(--neon); }
 
-  /* ── Верхняя навигация ── */
-  .nav {
-    display:flex; align-items:center; gap:1.6rem; padding:1rem 1.8rem;
-    border-bottom:1px solid var(--line); backdrop-filter:blur(12px);
-    position:sticky; top:0; z-index:50; background:rgba(7,8,12,.72);
-  }
+  .nav { display:flex; align-items:center; gap:1.6rem; padding:1rem 1.8rem; border-bottom:1px solid var(--line); backdrop-filter:blur(12px); position:sticky; top:0; z-index:50; background:rgba(7,8,12,.72); }
   .brand { display:flex; align-items:center; gap:.55rem; font-weight:800; font-size:1.05rem; letter-spacing:-.02em; }
   .brand .dot { width:11px; height:11px; border-radius:50%; background:var(--neon); box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6); animation:pulse 2.4s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{opacity:.65;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
@@ -69,7 +63,11 @@
   .drop p { margin-top:.5rem; font-size:.86rem; }
   .drop small { color:var(--muted); font-size:.75rem; }
 
-  .sched { margin-top:1.2rem; }
+  .empty { text-align:center; padding:1.6rem 1rem; color:var(--muted); }
+  .empty .ic { font-size:1.7rem; opacity:.7; }
+  .empty p { font-size:.86rem; margin-top:.5rem; color:var(--text); font-weight:600; }
+  .empty small { font-size:.76rem; display:block; margin-top:.3rem; }
+
   .sched-row { display:flex; align-items:center; gap:.7rem; padding:.7rem .8rem; border-radius:12px; border:1px solid var(--line); margin-bottom:.55rem; background:rgba(255,255,255,.012); }
   .acc { display:flex; align-items:center; gap:.45rem; font-size:.82rem; }
   .acc .ic { width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-size:.8rem; background:var(--neon-soft); border:1px solid var(--line); }
@@ -84,39 +82,15 @@
   .qmeta .t { font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .qmeta .s { font-size:.74rem; color:var(--muted); margin-top:.15rem; }
   .pill { font-size:.68rem; padding:.22rem .6rem; border-radius:100px; font-weight:600; }
-  .pill.done { color:#5bd67a; border:1px solid rgba(91,214,122,.35); background:rgba(91,214,122,.08); }
   .pill.wait { color:var(--neon-2); border:1px solid rgba(47,123,255,.35); background:var(--neon-soft); }
-  .pill.proc { color:#ffcf5b; border:1px solid rgba(255,207,91,.35); background:rgba(255,207,91,.08); }
-
-  .bar { height:6px; border-radius:100px; background:rgba(255,255,255,.06); overflow:hidden; margin-top:1rem; }
-  .bar i { display:block; height:100%; width:68%; border-radius:100px; background:linear-gradient(90deg,#0d4ea8,#2f7bff,#58a6ff); box-shadow:0 0 14px rgba(47,123,255,.7); animation:grow 3s ease-in-out infinite alternate; }
-  @keyframes grow { from{width:52%} to{width:78%} }
-
-  .feed { margin-top:1.2rem; }
-  .feed-item { display:flex; gap:.7rem; align-items:flex-start; padding:.7rem 0; border-bottom:1px solid var(--line); }
-  .feed-item:last-child { border-bottom:none; }
-  .feed-item .dot2 { width:8px; height:8px; border-radius:50%; background:var(--neon); box-shadow:0 0 8px var(--neon); margin-top:.35rem; flex:none; }
-  .feed-item .tx { font-size:.82rem; }
-  .feed-item .tm { font-size:.72rem; color:var(--muted); margin-top:.15rem; }
 
   footer { text-align:center; color:var(--muted); font-size:.76rem; padding:2rem 0 0; }
 
-  @media (max-width:900px) {
-    .stats { grid-template-columns:repeat(2,1fr); }
-    .grid { grid-template-columns:1fr; }
-    .nav-links { display:none; }
-  }
+  @media (max-width:900px) { .stats{grid-template-columns:repeat(2,1fr)} .grid{grid-template-columns:1fr} .nav-links{display:none} }
   @media (max-width:640px) {
-    .wrap { padding:1.4rem 1rem 3rem; }
-    .stats { grid-template-columns:1fr; gap:.7rem; }
-    .grid { gap:.9rem; }
-    .card { padding:1.05rem 1rem; }
-    .sched-row { flex-wrap:wrap; gap:.5rem; padding:.6rem .65rem; }
-    .sched-row .time { margin-left:0; width:100%; }
-    .thumb { width:60px; height:40px; }
-    .head h1 { font-size:1.35rem; }
-    .nav { padding:.85rem 1rem; gap:.8rem; }
-    .user-chip span.uname { display:none; }
+    .wrap{padding:1.4rem 1rem 3rem} .stats{grid-template-columns:1fr;gap:.7rem} .grid{gap:.9rem}
+    .card{padding:1.05rem 1rem} .head h1{font-size:1.35rem} .nav{padding:.85rem 1rem;gap:.8rem}
+    .user-chip span.uname{display:none}
   }
 </style>
 </head>
@@ -144,100 +118,104 @@
   <div class="head">
     <div>
       <h1>Обзор</h1>
-      <p>Ваши публикации и очередь на сегодня</p>
+      <p>Ваши видео, аккаунты и расписание</p>
     </div>
-    <button class="btn btn-neon">+ Загрузить видео</button>
+    <button class="btn btn-neon" onclick="document.getElementById('fileInput').click()">+ Загрузить видео</button>
+    <input type="file" id="fileInput" accept="video/*" style="display:none">
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="lbl">Аккаунтов</div><div class="val"><em>7</em></div><div class="sub">Instagram ×4, VK, FB, TG</div></div>
-    <div class="stat"><div class="lbl">Видео за месяц</div><div class="val">128</div><div class="sub">уникализировано</div></div>
-    <div class="stat"><div class="lbl">Публикаций</div><div class="val">412</div><div class="sub">успешно отправлено</div></div>
-    <div class="stat"><div class="lbl">В очереди</div><div class="val"><em>3</em></div><div class="sub">ближайшая — 18:30</div></div>
+    <div class="stat"><div class="lbl">Аккаунтов</div><div class="val" id="statAcc"><em>0</em></div><div class="sub" id="statAccSub">не подключено</div></div>
+    <div class="stat"><div class="lbl">Видео</div><div class="val" id="statVid">0</div><div class="sub">загружено</div></div>
+    <div class="stat"><div class="lbl">Публикаций</div><div class="val" id="statPub">0</div><div class="sub">отправлено</div></div>
+    <div class="stat"><div class="lbl">В очереди</div><div class="val" id="statQ"><em>0</em></div><div class="sub">запланировано</div></div>
   </div>
 
   <div class="grid">
     <div class="card">
-      <h2><span class="tick"></span> Расписание публикаций</h2>
-      <div class="drop">
+      <h2><span class="tick"></span> Видео</h2>
+      <div class="drop" onclick="document.getElementById('fileInput').click()">
         <div class="ic">🎬</div>
         <p>Перетащите видео или вставьте ссылку</p>
         <small>MP4, MOV · TikTok, YouTube, Instagram, VK</small>
       </div>
-      <div class="sched">
-        <div class="sched-row">
-          <div class="acc"><span class="ic">📷</span> @brand.main</div>
-          <span class="badge on">Автоуникализация</span>
-          <span class="time">12:00 · 18:30</span>
-        </div>
-        <div class="sched-row">
-          <div class="acc"><span class="ic">📘</span> Facebook · Brand</div>
-          <span class="badge on">Автоуникализация</span>
-          <span class="time">13:15 · 19:45</span>
-        </div>
-        <div class="sched-row">
-          <div class="acc"><span class="ic">🅥</span> VK · Brand</div>
-          <span class="badge">Оригинал</span>
-          <span class="time">10:00</span>
+      <div id="videoList" style="margin-top:1rem">
+        <div class="empty">
+          <div class="ic">🎞</div>
+          <p>Видео пока нет</p>
+          <small>Загрузите первое видео или вставьте ссылку</small>
         </div>
       </div>
-      <div class="bar"><i></i></div>
     </div>
 
     <div class="card">
       <h2><span class="tick"></span> Очередь</h2>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">reel_summer_01.mp4</div><div class="s">3 версии · Instagram ×2</div></div><span class="pill proc">Обработка</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">tiktok_0891.mp4</div><div class="s">по расписанию 18:30</div></div><span class="pill wait">В очереди</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">promo_reel.mp4</div><div class="s">5 версий · опубликовано</div></div><span class="pill done">Готово</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">story_clip.mp4</div><div class="s">2 версии · VK</div></div><span class="pill done">Готово</span></div>
+      <div id="queueList">
+        <div class="empty">
+          <div class="ic">🕓</div>
+          <p>Очередь пуста</p>
+          <small>Запланированные публикации появятся здесь</small>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="grid" style="margin-top:1.2rem">
     <div class="card">
       <h2><span class="tick"></span> Мои аккаунты</h2>
-      <div class="sched">
-        <div class="sched-row"><div class="acc"><span class="ic">📷</span> @brand.main</div><span class="badge on">подключено</span><span class="time">Instagram</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">📷</span> @brand.shop</div><span class="badge on">подключено</span><span class="time">Instagram</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">📘</span> Facebook · Brand</div><span class="badge on">подключено</span><span class="time">Facebook</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">🅥</span> VK · Brand</div><span class="badge on">подключено</span><span class="time">VK</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">✈️</span> @channel</div><span class="badge">не подключено</span><span class="time">Telegram</span></div>
+      <div id="accList">
+        <div class="empty">
+          <div class="ic">🔗</div>
+          <p>Аккаунты не подключены</p>
+          <small>Подключите Instagram, Facebook, VK или Telegram</small>
+        </div>
       </div>
+      <button class="btn btn-neon" style="margin-top:1rem;width:100%" onclick="alert('Подключение аккаунтов появится после покупки домена и настройки API.')">+ Подключить аккаунт</button>
     </div>
 
     <div class="card">
-      <h2><span class="tick"></span> Ближайшие публикации</h2>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">reel_summer_01</div><div class="s">Instagram ×2, VK</div></div><span class="pill wait">18:30</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">tiktok_0891</div><div class="s">Instagram ×1</div></div><span class="pill wait">19:45</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">promo_reel</div><div class="s">Facebook, VK</div></div><span class="pill wait">21:00</span></div>
+      <h2><span class="tick"></span> Расписание</h2>
+      <div id="schedList">
+        <div class="empty">
+          <div class="ic">📅</div>
+          <p>Расписание пустое</p>
+          <small>Добавьте аккаунт, чтобы настроить время публикаций</small>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:1.2rem">
-    <h2><span class="tick"></span> Последние события</h2>
-    <div class="feed">
-      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Видео <b>reel_summer_01.mp4</b> — создано 3 уникальные версии</div><div class="tm">12 минут назад</div></div></div>
-      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Опубликовано в <b>Instagram @brand.shop</b></div><div class="tm">1 час назад</div></div></div>
-      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Подключён аккаунт <b>VK · Brand</b></div><div class="tm">сегодня, 09:14</div></div></div>
-      <div class="feed-item"><span class="dot2"></span><div><div class="tx">Скачано по ссылке <b>TikTok</b> в лучшем качестве</div><div class="tm">вчера, 21:40</div></div></div>
-    </div>
-  </div>
-
-  <footer>uniqpost — личный кабинет · демо-данные</footer>
+  <footer>uniqpost — личный кабинет</footer>
 </div>
 
 <script>
-  // Охрана: без входа — на страницу входа
+  // Охрана
   if (localStorage.getItem('uniqpost_demo_auth') !== '1' && !localStorage.getItem('uniqpost_token')) {
     location.replace('login.html');
   }
-  // Имя пользователя в шапке
+  // Имя в шапке
   try {
     const em = localStorage.getItem('uniqpost_email') || 'yulia9500@mail.ru';
-    const ch = em[0] ? em[0].toUpperCase() : 'Ю';
-    document.getElementById('avatar').textContent = ch;
+    document.getElementById('avatar').textContent = (em[0] || 'Ю').toUpperCase();
     document.getElementById('uname').textContent = em;
   } catch (e) {}
+
+  // Загрузка видео — реальная (файл → список)
+  const fileInput = document.getElementById('fileInput');
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files[0];
+    if (!f) return;
+    const list = document.getElementById('videoList');
+    if (list.querySelector('.empty')) list.innerHTML = '';
+    const sizeMb = (f.size / 1024 / 1024).toFixed(1);
+    const row = document.createElement('div');
+    row.className = 'qitem';
+    row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t">' + f.name +
+      '</div><div class="s">' + sizeMb + ' МБ · только что загружено</div></div><span class="pill wait">Загружено</span>';
+    list.prepend(row);
+    document.getElementById('statVid').textContent = list.children.length;
+    fileInput.value = '';
+  });
 </script>
 </body>
 </html>
