@@ -19,6 +19,7 @@
       radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);
     background-attachment:fixed;
   }
+  a.btn { text-decoration:none !important; }
   .btn { border:none; border-radius:100px; padding:.55rem 1.15rem; font-family:var(--font); font-size:.82rem; font-weight:600; cursor:pointer; transition:all .18s; }
   .btn-ghost { background:transparent; color:var(--muted); }
   .btn-ghost:hover { color:var(--text); }
@@ -248,7 +249,7 @@
     if (v.type === 'original') {
       html += '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">🎨 Уникализировать</button>';
     }
-    html += '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line)" ' +
+    html += '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);text-decoration:none" ' +
             'href="' + API + '/file/' + encodeURIComponent(v.file) + '">⬇ Скачать</a>' +
             '<button class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);color:#ff6b6b">✕ Удалить</button>';
     box.innerHTML = html;
