@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Склад-игра — демо</title>
+<style>
+  :root{
+    --bg:#0a0d14; --panel:#111725; --panel2:#161d2e; --line:rgba(80,140,255,.16);
+    --neon:#2f7bff; --neon2:#58a6ff; --text:#e8eefc; --muted:#7d8aa8;
+    --ok:#3ddc84; --warn:#ffcc4d; --bad:#ff5c5c; --font:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background:
+    radial-gradient(900px 500px at 15% -10%,rgba(47,123,255,.14),transparent 60%),
+    radial-gradient(700px 500px at 100% 105%,rgba(88,166,255,.10),transparent 55%);pointer-events:none}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;
+    border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,13,20,.85);
+    backdrop-filter:blur(10px);z-index:50}
+  .logo{display:flex;align-items:center;gap:.6rem;font-weight:800;letter-spacing:.3px}
+  .logo span{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--neon),var(--neon2));
+    display:grid;place-items:center;font-size:.95rem}
+  .hud{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.45rem .8rem;
+    font-size:.78rem;display:flex;gap:.45rem;align-items:center}
+  .stat b{color:var(--neon2)}
+
+  main{padding:1.2rem 1.4rem 3rem;max-width:1200px;margin:0 auto}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:1.2rem}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+  h2{font-size:.78rem;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);
+    margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+  h2::before{content:'';width:2px;height:14px;background:var(--neon);border-radius:2px}
+
+  .warehouse{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem}
+  .shelves{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+  @media(max-width:640px){.shelves{grid-template-columns:repeat(2,1fr)}}
+  .shelf{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:.6rem;
+    min-height:150px;transition:.18s}
+  .shelf.over{border-color:var(--neon);box-shadow:0 0 0 3px rgba(47,123,255,.18);background:#131b2d}
+  .shelf-title{font-size:.72rem;color:var(--muted);margin-bottom:.5rem;text-transform:uppercase;
+    letter-spacing:1px;display:flex;justify-content:space-between}
+  .slot{height:64px;border-radius:10px;border:1px dashed rgba(120,150,220,.22);margin-bottom:.45rem;
+    display:flex;align-items:center;gap:.5rem;padding:.35rem .45rem;transition:.15s}
+  .slot.filled{border-style:solid;background:linear-gradient(180deg,#182034,#141b2b)}
+
+  .item{display:flex;align-items:center;gap:.5rem;background:var(--panel2);border:1px solid var(--line);
+    border-radius:11px;padding:.5rem .6rem;cursor:grab;transition:.15s;user-select:none}
+  .item:active{cursor:grabbing}
+  .item.dragging{opacity:.35}
+  .item .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:1.05rem;
+    background:rgba(47,123,255,.10);flex:none}
+  .item .meta{flex:1;min-width:0}
+  .item .n{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .p{font-size:.7rem;color:var(--muted)}
+  .qty{font-size:.7rem;background:rgba(47,123,255,.14);color:var(--neon2);padding:.2rem .5rem;
+    border-radius:100px;font-weight:700;flex:none}
+
+  .incoming{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;
+    display:flex;flex-direction:column;gap:.55rem;max-height:520px;overflow:auto}
+  .side h2{margin-top:0}
+  .orders{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem;margin-top:1rem}
+  .order{display:flex;align-items:center;gap:.55rem;padding:.5rem .55rem;border-radius:11px;
+    background:var(--panel2);margin-bottom:.45rem;font-size:.82rem;transition:.3s}
+  .order.done{opacity:.35;text-decoration:line-through}
+  .order .dot{width:8px;height:8px;border-radius:50%;background:var(--warn);flex:none}
+  .order.ready .dot{background:var(--ok);box-shadow:0 0 10px rgba(61,220,132,.6)}
+  .order .tag{margin-left:auto;font-size:.68rem;color:var(--muted)}
+
+  .btn{background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;color:#fff;font-family:var(--font);
+    font-weight:700;padding:.6rem 1rem;border-radius:12px;cursor:pointer;font-size:.8rem;transition:.15s}
+  .btn:hover{filter:brightness(1.12)}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:600}
+
+  .toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(120%);
+    background:var(--panel2);border:1px solid var(--neon);color:var(--text);padding:.7rem 1.2rem;
+    border-radius:12px;font-size:.85rem;transition:.35s;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+
+  .lvl{height:7px;background:var(--panel2);border-radius:100px;overflow:hidden;margin-top:.5rem;border:1px solid var(--line)}
+  .lvl i{display:block;height:100%;background:linear-gradient(90deg,var(--neon),var(--neon2));width:0;transition:.35s}
+  footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.75rem}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>📦</span> Склад-игра <small style="color:var(--muted);font-weight:500">демо</small></div>
+  <div class="hud">
+    <div class="stat">Уровень <b id="lvlNum">1</b></div>
+    <div class="stat">Очки <b id="score">0</b></div>
+    <div class="stat">Заказы <b id="doneCount">0</b>/<b id="totalCount">0</b></div>
+    <button class="btn ghost" onclick="resetGame()">Сбросить</button>
+  </div>
+</header>
+
+<main>
+  <div class="lvl"><i id="lvlBar"></i></div>
+  <p style="font-size:.76rem;color:var(--muted);margin:.6rem 0 1rem">
+    Перетаскивай товары с «Поставки» на полки. Когда все товары заказа на месте — заказ собран.
+  </p>
+
+  <div class="grid">
+    <div>
+      <div class="warehouse">
+        <h2>Стеллажи</h2>
+        <div class="shelves" id="shelves"></div>
+      </div>
+
+      <div class="orders">
+        <h2>Заказы</h2>
+        <div id="orders"></div>
+      </div>
+    </div>
+
+    <div>
+      <h2>Поставка</h2>
+      <div class="incoming" id="incoming"></div>
+      <button class="btn" style="width:100%;margin-top:.7rem" onclick="newShipment()">🔄 Новая поставка</button>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+<footer>Склад-игра — демонстрация. Сделано в uniqpost.</footer>
+
+<script>
+// ── Каталог товаров ───────────────────────────────────────────
+const GOODS = [
+  {id:'tv',  n:'Телевизор',  ic:'📺', p:45000},
+  {id:'ph',  n:'Смартфон',   ic:'📱', p:32000},
+  {id:'lp',  n:'Ноутбук',    ic:'💻', p:68000},
+  {id:'hp',  n:'Наушники',   ic:'🎧', p:7900},
+  {id:'kb',  n:'Клавиатура', ic:'⌨️', p:3400},
+  {id:'ms',  n:'Мышь',       ic:'🖱️', p:1900},
+  {id:'cm',  n:'Камера',     ic:'📷', p:54000},
+  {id:'wt',  n:'Часы',       ic:'⌚', p:12900},
+  {id:'sp',  n:'Колонка',    ic:'🔊', p:5600},
+  {id:'gd',  n:'Планшет',    ic:'📟', p:27000},
+];
+const SHELF_NAMES = ['Стеллаж A','Стеллаж B','Стеллаж C','Стеллаж D','Стеллаж E','Стеллаж F'];
+const SLOTS_PER_SHELF = 3;
+
+const LEVELS = [
+  {goal:2, orderSize:2},
+  {goal:3, orderSize:2},
+  {goal:4, orderSize:3},
+  {goal:5, orderSize:3},
+];
+
+let state;
+
+function initState(){
+  const lvl = 1;
+  const cfg = LEVELS[lvl-1];
+  state = {
+    level: lvl, score: 0, ordersDone: 0,
+    shelfCount: 2,
+    shelves: [], incoming: [], orders: []
+  };
+  buildShelves();
+  newShipment();
+  buildOrders(cfg);
+  render();
+}
+
+function buildShelves(){
+  state.shelves = [];
+  for(let i=0;i<state.shelfCount;i++){
+    state.shelves.push({name:SHELF_NAMES[i], items:Array(SLOTS_PER_SHELF).fill(null)});
+  }
+}
+
+function rndGood(){ return GOODS[Math.floor(Math.random()*GOODS.length)]; }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function newShipment(){
+  const n = 3 + Math.floor(Math.random()*3);
+  state.incoming = [];
+  for(let i=0;i<n;i++){
+    const g = rndGood();
+    state.incoming.push({uid:uid(), good:g, qty: 1+Math.floor(Math.random()*4)});
+  }
+  renderIncoming();
+  checkOrders();
+  save();
+}
+
+function buildOrders(cfg){
+  state.orders = [];
+  for(let i=0;i<cfg.goal;i++){
+    const g = rndGood();
+    state.orders.push({uid:uid(), good:g, need:1+Math.floor(Math.random()*2), done:false, bonus:cfg.orderSize*100});
+  }
+  renderOrders();
+}
+
+// ── Рендер ────────────────────────────────────────────────────
+function render(){
+  renderShelves(); renderIncoming(); renderOrders(); renderHud();
+}
+
+function renderHud(){
+  document.getElementById('lvlNum').textContent = state.level;
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('doneCount').textContent = state.ordersDone;
+  document.getElementById('totalCount').textContent = state.orders.length;
+  const cfg = LEVELS[state.level-1];
+  const pct = Math.min(100, (state.ordersDone / cfg.goal) * 100);
+  document.getElementById('lvlBar').style.width = pct + '%';
+}
+
+function renderShelves(){
+  const box = document.getElementById('shelves');
+  box.innerHTML = state.shelves.map((sh,si)=>`
+    <div class="shelf" data-shelf="${si}">
+      <div class="shelf-title"><span>${sh.name}</span><span>${sh.items.filter(Boolean).length}/${SLOTS_PER_SHELF}</span></div>
+      ${sh.items.map((it,ii)=>`
+        <div class="slot ${it?'filled':''}" data-shelf="${si}" data-slot="${ii}">
+          ${it?itemHTML(it, false):''}
+        </div>`).join('')}
+    </div>`).join('');
+  bindDropTargets();
+}
+
+function itemHTML(it, draggable){
+  return `<div class="item" ${draggable?'draggable="true"':''} data-uid="${it.uid}">
+      <div class="ic">${it.good.ic}</div>
+      <div class="meta"><div class="n">${it.good.n}</div><div class="p">${it.good.p.toLocaleString('ru')} ₽</div></div>
+      <span class="qty">×${it.qty}</span>
+    </div>`;
+}
+
+function renderIncoming(){
+  const box = document.getElementById('incoming');
+  if(!state.incoming.length){
+    box.innerHTML = `<div style="color:var(--muted);font-size:.82rem;text-align:center;padding:1.5rem">
+      Поставка разгружена 👍<br><small>Жми «Новая поставка»</small></div>`;
+    return;
+  }
+  box.innerHTML = state.incoming.map(it=>itemHTML(it, true)).join('');
+  bindDrag();
+}
+
+function renderOrders(){
+  const box = document.getElementById('orders');
+  box.innerHTML = state.orders.map(o=>`
+    <div class="order ${o.done?'done':''} ${storageHas(o)?'ready':''}" data-ouid="${o.uid}">
+      <span class="dot"></span>
+      <span>${o.good.ic} ${o.good.n} ×${o.need}</span>
+      <span class="tag">${o.done?'выполнен':(storageHas(o)?'готов к сборке':'ждёт товар')}</span>
+    </div>`).join('');
+}
+
+// ── Игровая логика ────────────────────────────────────────────
+function storageHas(order){
+  let have = 0;
+  state.shelves.forEach(sh=>sh.items.forEach(it=>{
+    if(it && it.good.id === order.good.id) have += it.qty;
+  }));
+  return have >= order.need;
+}
+
+function checkOrders(){
+  let changed = false;
+  state.orders.forEach(o=>{
+    if(!o.done && storageHas(o)){
+      o.done = true; changed = true;
+      state.ordersDone++;
+      state.score += 100 + Math.floor(o.good.p/1000);
+      toast(`✅ Заказ собран: ${o.good.n} (+${100+Math.floor(o.good.p/1000)} очков)`);
+      // списываем из стеллажей
+      let need = o.need;
+      for(const sh of state.shelves){
+        for(let i=0;i<sh.items.length && need>0;i++){
+          const it = sh.items[i];
+          if(it && it.good.id===o.good.id){
+            const take = Math.min(it.qty, need);
+            it.qty -= take; need -= take;
+            if(it.qty<=0) sh.items[i]=null;
+          }
+        }
+      }
+    }
+  });
+  if(changed){ render(); checkLevel(); }
+  else { renderHud(); }
+  save();
+}
+
+function checkLevel(){
+  const cfg = LEVELS[state.level-1];
+  if(state.ordersDone >= cfg.goal){
+    if(state.level < LEVELS.length){
+      state.level++;
+      state.shelfCount = Math.min(SHELF_NAMES.length, state.shelfCount+1);
+      toast(`🎉 Уровень ${state.level}! Открыт новый стеллаж`);
+      buildShelves(); buildOrders(LEVELS[state.level-1]);
+    } else {
+      toast('🏆 Все уровни пройдены! Ты — директор склада');
+    }
+    render();
+  }
+}
+
+// ── Drag & Drop ───────────────────────────────────────────────
+let dragUid = null;
+function bindDrag(){
+  document.querySelectorAll('#incoming .item[draggable="true"]').forEach(el=>{
+    el.addEventListener('dragstart', e=>{
+      dragUid = el.dataset.uid;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    el.addEventListener('dragend', ()=>el.classList.remove('dragging'));
+    el.addEventListener('click', ()=>quickPlace(el.dataset.uid)); // тап для мобил
+  });
+}
+
+function bindDropTargets(){
+  document.querySelectorAll('.slot').forEach(slot=>{
+    slot.addEventListener('dragover', e=>{ e.preventDefault(); slot.closest('.shelf').classList.add('over'); });
+    slot.addEventListener('dragleave', ()=>slot.closest('.shelf').classList.remove('over'));
+    slot.addEventListener('drop', e=>{
+      e.preventDefault();
+      slot.closest('.shelf').classList.remove('over');
+      if(!dragUid) return;
+      const si = +slot.dataset.shelf, ii = +slot.dataset.slot;
+      placeItem(dragUid, si, ii);
+      dragUid = null;
+    });
+    slot.addEventListener('click', ()=>{
+      // перемещение уже лежащего товара на свободное место
+    });
+  });
+}
+
+function quickPlace(uid){
+  // найти свободный слот
+  for(let si=0; si<state.shelves.length; si++){
+    for(let ii=0; ii<state.shelves[si].items.length; ii++){
+      if(!state.shelves[si].items[ii]){ placeItem(uid, si, ii); return; }
+    }
+  }
+  toast('Нет свободных мест на стеллажах');
+}
+
+function placeItem(uid, si, ii){
+  const idx = state.incoming.findIndex(x=>x.uid===uid);
+  if(idx===-1) return;
+  if(state.shelves[si].items[ii]) { toast('Место занято'); return; }
+  const it = state.incoming.splice(idx,1)[0];
+  state.shelves[si].items[ii] = it;
+  renderShelves(); renderIncoming();
+  checkOrders();
+  save();
+}
+
+// ── Прочее ────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function save(){ try{ localStorage.setItem('warehouse_game', JSON.stringify(state)); }catch(e){} }
+function load(){
+  try{
+    const raw = localStorage.getItem('warehouse_game');
+    if(!raw) return false;
+    state = JSON.parse(raw);
+    return true;
+  }catch(e){ return false; }
+}
+
+function resetGame(){
+  localStorage.removeItem('warehouse_game');
+  initState();
+  toast('Игра начата заново');
+}
+
+// старт
+if(!load()) initState();
+else render();
+</script>
+</body>
+</html>
