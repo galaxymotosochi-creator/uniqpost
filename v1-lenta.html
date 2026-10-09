@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uniqpost — 3D-лента</title>
+<style>
+  :root{--bg:#05060a;--neon:#2f7bff;--neon2:#58a6ff;--text:#eaf0ff;--muted:#8b9ac0;
+    --panel:rgba(8,11,18,.8);--line:rgba(70,130,255,.2);--font:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+  #app{position:fixed;inset:0}
+  .hud{position:fixed;top:0;left:0;right:0;padding:.9rem 1.1rem;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:1rem;pointer-events:none;z-index:10;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:.5rem .85rem;backdrop-filter:blur(10px);pointer-events:auto}
+  .brand span{width:25px;height:25px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--neon2));
+    display:grid;place-items:center;font-size:.85rem}
+  .brand b{font-size:.84rem}.brand small{color:var(--muted);font-weight:500;font-size:.7rem}
+  .stats{display:flex;gap:.45rem;flex-wrap:wrap;pointer-events:auto}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.45rem .75rem;
+    backdrop-filter:blur(10px);font-size:.74rem;display:flex;gap:.35rem;align-items:center}
+  .stat b{color:var(--neon2)}
+  .socials{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;pointer-events:none;
+    display:flex;flex-direction:column;gap:.5rem}
+  .soc{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:.72rem;
+    color:#fff;border:1px solid rgba(255,255,255,.15);opacity:.85}
+  .panel{position:fixed;right:1.1rem;bottom:1.1rem;width:min(250px,76vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:.85rem;backdrop-filter:blur(12px);z-index:10}
+  .panel h3{font-size:.7rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:.5rem;
+    display:flex;align-items:center;gap:.45rem}
+  .panel h3::before{content:'';width:2px;height:12px;background:var(--neon);border-radius:2px}
+  .row{display:flex;justify-content:space-between;font-size:.78rem;padding:.3rem 0;color:var(--muted)}
+  .row b{color:var(--text)}
+  .btn{background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;color:#fff;font-family:var(--font);
+    font-weight:700;padding:.58rem .85rem;border-radius:11px;cursor:pointer;font-size:.76rem;width:100%;margin-top:.55rem}
+  .btn:active{transform:translateY(1px)}
+  .cap{position:fixed;left:1.1rem;bottom:1.1rem;max-width:min(350px,60vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:.55rem .85rem;font-size:.73rem;color:var(--muted);
+    backdrop-filter:blur(10px);z-index:10}
+  .cap b{color:var(--text)}
+  @media(max-width:760px){.panel{bottom:5rem}.cap{display:none}.socials{display:none}}
+  .toast{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(.92);background:rgba(8,11,18,.96);
+    border:1px solid var(--neon);border-radius:14px;padding:.8rem 1.35rem;font-size:.9rem;font-weight:600;
+    opacity:0;transition:.28s;pointer-events:none;z-index:30;text-align:center;max-width:86vw}
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .loader{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="loader" id="loader">Открываю ленту…</div>
+
+<div class="hud">
+  <div class="brand"><span>📱</span><div><b>uniqpost · лента</b><br><small>вариант 1 · 3D</small></div></div>
+  <div class="stats">
+    <div class="stat">Роликов <b id="clips">0</b></div>
+    <div class="stat">Версий <b id="vers">0</b></div>
+    <div class="stat">Сети <b>5</b></div>
+  </div>
+</div>
+
+<div class="socials">
+  <div class="soc" style="background:#00f2ea;color:#04222a">TT</div>
+  <div class="soc" style="background:#ff2d2d">YT</div>
+  <div class="soc" style="background:#0077ff">VK</div>
+  <div class="soc" style="background:#e1306c">IG</div>
+  <div class="soc" style="background:#2aabee">TG</div>
+</div>
+
+<div class="panel">
+  <h3>Лента</h3>
+  <div class="row"><span>Роликов</span><b id="pClips">0</b></div>
+  <div class="row"><span>Версий</span><b id="pVers">0</b></div>
+  <button class="btn" id="addBtn">＋ Добавить ролик</button>
+  <button class="btn" id="verBtn" style="background:transparent;border:1px solid var(--line);color:var(--text)">✦ Уникализировать</button>
+</div>
+
+<div class="cap"><b>Смысл:</b> лента видео (как в соцсети). Клик по ролику — его версии выстраиваются рядом.</div>
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// «обложки» роликов — градиенты-кадры (рисуем на canvas)
+function makeCover(c1,c2,label){
+  const cv=document.createElement('canvas'); cv.width=256; cv.height=456;
+  const x=cv.getContext('2d');
+  const g=x.createLinearGradient(0,0,256,456); g.addColorStop(0,c1); g.addColorStop(1,c2);
+  x.fillStyle=g; x.fillRect(0,0,256,456);
+  // «кадр»: силуэты/линии
+  x.globalAlpha=.22; x.fillStyle='#fff';
+  for(let i=0;i<5;i++) x.fillRect(20, 300+i*30, 216, 6);
+  x.beginPath(); x.arc(128,170,52,0,Math.PI*2); x.globalAlpha=.28; x.fill();
+  x.globalAlpha=1; x.fillStyle='rgba(255,255,255,.92)';
+  x.font='bold 26px Inter,sans-serif'; x.fillText(label,20,44);
+  const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; return tex;
+}
+
+const COVER_COLORS=[
+  ['#2f7bff','#0a1a3a'],['#58a6ff','#0c1e40'],['#9b6cff','#1a0f38'],
+  ['#3ddcff','#062430'],['#4fd1ff','#082433'],['#7aa8ff','#0d1c38'],
+];
+const LABELS=['TikTok','Reels','Shorts','VK Клип','Travel','Food','Sport','Music'];
+
+let scene,camera,renderer,controls,clock,raycaster,pointer;
+let clips=[];  // {group, baseX, baseZ, versions[]}
+let versionsTotal=0;
+
+init();
+
+function init(){
+  clock=new THREE.Clock();
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x05060a);
+  scene.fog=new THREE.Fog(0x05060a,18,52);
+  camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,150);
+  camera.position.set(0,3.2,9);
+  controls=new OrbitControls(camera,new THREE.PerspectiveCamera(),0); // заменим ниже
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+  document.getElementById('app').appendChild(renderer.domElement);
+
+  controls=new OrbitControls(camera,renderer.domElement);
+  controls.target.set(0,1.6,-6); controls.enableDamping=true; controls.dampingFactor=.08;
+  controls.maxPolarAngle=Math.PI/2.05; controls.minDistance=3; controls.maxDistance=24;
+  raycaster=new THREE.Raycaster(); pointer=new THREE.Vector2();
+
+  scene.add(new THREE.AmbientLight(0x8fb0ff,.75));
+  const key=new THREE.DirectionalLight(0xffffff,.9); key.position.set(4,10,8); scene.add(key);
+  const p1=new THREE.PointLight(0x2f7bff,60,40,2); p1.position.set(-6,4,2); scene.add(p1);
+  const p2=new THREE.PointLight(0x9b6cff,45,40,2); p2.position.set(7,3,-14); scene.add(p2);
+
+  buildGrid();
+  for(let i=0;i<6;i++) addClip(i,false);
+
+  addEventListener('resize',onResize);
+  renderer.domElement.addEventListener('pointerdown',onDown);
+  document.getElementById('addBtn').onclick=()=>addClip(clips.length,true);
+  document.getElementById('verBtn').onclick=()=>{ if(clips.length) burstVersions(clips[0]); };
+  document.getElementById('loader').style.display='none';
+  animate();
+}
+
+function buildGrid(){
+  const g=new THREE.GridHelper(80,40,0x16294d,0x0b1322); g.position.y=-.02; scene.add(g);
+}
+
+// вертикальный ролик = «телефон» с обложкой
+function makeClip(tex){
+  const W=1.1,H=1.96;
+  const g=new THREE.Group();
+  const cas=new THREE.Mesh(new THREE.BoxGeometry(W,H,.08),
+    new THREE.MeshStandardMaterial({color:0x0d1626,roughness:.4,metalness:.5}));
+  cas.position.z=-.04; g.add(cas);
+  const face=new THREE.Mesh(new THREE.PlaneGeometry(W-.08,H-.08),
+    new THREE.MeshBasicMaterial({map:tex}));
+  face.position.z=.001; g.add(face);
+  const rim=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(W,H,.08)),
+    new THREE.LineBasicMaterial({color:0x8fc0ff,transparent:true,opacity:.5}));
+  g.add(rim);
+  return g;
+}
+
+function addClip(i,notify){
+  const col=COVER_COLORS[i%COVER_COLORS.length];
+  const tex=makeCover(col[0],col[1],LABELS[i%LABELS.length]);
+  const g=makeClip(tex);
+  // лента уходит в глубину, слегка по диагонали
+  const baseX=((i%3)-1)*1.7;
+  const baseZ=-2.5 - Math.floor(i/3)*2.4;
+  g.position.set(baseX,1.15,baseZ);
+  g.rotation.y=((i%3)-1)*.18;
+  scene.add(g);
+  const clip={group:g, baseX, baseZ, versions:[], centered:false};
+  clips.push(clip);
+  if(notify) toast('＋ Ролик добавлен');
+  updateHud();
+}
+
+// версии выстраиваются рядом
+function burstVersions(clip){
+  const g0=clip.group;
+  const n=3+Math.floor(Math.random()*3);
+  for(let i=0;i<n;i++){
+    const col=COVER_COLORS[(i+2)%COVER_COLORS.length];
+    const tex=makeCover(col[0],col[1],'v'+(i+1));
+    const v=makeClip(tex);
+    v.scale.set(.62,.62,.62);
+    v.position.copy(g0.position);
+    scene.add(v);
+    const sx=g0.position.x, sy=g0.position.y, sz=g0.position.z;
+    const dx=(i-(n-1)/2)*1.05;
+    const tx=sx+dx, ty=sy, tz=sz+0.9;
+    const t0=clock.getElapsedTime();
+    const anim=()=>{
+      const k=Math.min(1,(clock.getElapsedTime()-t0)/.85);
+      const e=k*k*(3-2*k);
+      v.position.set(sx+(tx-sx)*e, sy+(ty-sy)*e + Math.sin(k*Math.PI)*.5, sz+(tz-sz)*e);
+      v.rotation.y=e*Math.PI*1.5;
+      if(k<1) requestAnimationFrame(anim);
+      else { v.rotation.y=0; clip.versions.push({mesh:v, t:clock.getElapsedTime()}); flyOut(v); }
+    };
+    anim();
+  }
+  versionsTotal+=n;
+  toast('✦ Создано '+n+' версий');
+  updateHud();
+}
+
+// версия улетает в одну из сетей (в глубину, налево/направо)
+function flyOut(v){
+  const sx=v.position.x, sy=v.position.y, sz=v.position.z;
+  const dir=Math.sign(sx)||1;
+  const tx=sx+dir*4.5, ty=sy+1.4, tz=sz-3.5;
+  const t0=clock.getElapsedTime();
+  const anim=()=>{
+    const k=Math.min(1,(clock.getElapsedTime()-t0)/1.1);
+    const e=k*k*(3-2*k);
+    v.position.set(sx+(tx-sx)*e, sy+(ty-sy)*e, sz+(tz-sz)*e);
+    v.rotation.y=e*Math.PI*2;
+    v.scale.setScalar(.62*(1-e*.5));
+    if(k<1) requestAnimationFrame(anim);
+    else scene.remove(v);
+  };
+  anim();
+}
+
+function setPtr(e){ pointer.x=(e.clientX/innerWidth)*2-1; pointer.y=-(e.clientY/innerHeight)*2+1; }
+function onDown(e){
+  if(e.button!==0) return;
+  setPtr(e);
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObjects(clips.map(c=>c.group),true);
+  if(!hits.length) return;
+  let o=hits[0].object; while(o.parent && !clips.find(c=>c.group===o)) o=o.parent;
+  const clip=clips.find(c=>c.group===o);
+  if(clip) burstVersions(clip);
+}
+
+function updateHud(){
+  document.getElementById('clips').textContent=clips.length;
+  document.getElementById('pClips').textContent=clips.length;
+  document.getElementById('vers').textContent=versionsTotal;
+  document.getElementById('pVers').textContent=versionsTotal;
+}
+
+let timer;
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(timer); timer=setTimeout(()=>t.classList.remove('show'),1400); }
+function onResize(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); }
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  clips.forEach((c,i)=>{
+    c.group.position.y=1.15+Math.sin(t*1.1+i)*.08;
+    c.group.rotation.z=Math.sin(t*.7+i)*.03;
+  });
+  controls.update();
+  renderer.render(scene,camera);
+}
+</script>
+</body>
+</html>
