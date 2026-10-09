@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uniqpost — Размножение (вариант A)</title>
+<style>
+  :root{--bg:#05060a;--neon:#2f7bff;--neon2:#58a6ff;--text:#eaf0ff;--muted:#8b9ac0;
+    --panel:rgba(8,11,18,.8);--line:rgba(70,130,255,.2);--font:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+  #app{position:fixed;inset:0}
+  .hud{position:fixed;top:0;left:0;right:0;padding:1rem 1.2rem;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:1rem;pointer-events:none;z-index:10;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:.5rem .85rem;backdrop-filter:blur(10px);pointer-events:auto}
+  .brand span{width:25px;height:25px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--neon2));
+    display:grid;place-items:center;font-size:.85rem}
+  .brand b{font-size:.84rem}.brand small{color:var(--muted);font-weight:500;font-size:.7rem}
+  .stats{display:flex;gap:.45rem;flex-wrap:wrap;pointer-events:auto}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.45rem .75rem;
+    backdrop-filter:blur(10px);font-size:.74rem;display:flex;gap:.35rem;align-items:center}
+  .stat b{color:var(--neon2)}
+  .panel{position:fixed;right:1.1rem;bottom:1.1rem;width:min(260px,76vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:.85rem;backdrop-filter:blur(12px);z-index:10}
+  .panel h3{font-size:.7rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:.5rem;
+    display:flex;align-items:center;gap:.45rem}
+  .panel h3::before{content:'';width:2px;height:12px;background:var(--neon);border-radius:2px}
+  .row{display:flex;justify-content:space-between;font-size:.78rem;padding:.32rem 0;color:var(--muted)}
+  .row b{color:var(--text)}
+  .btn{background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;color:#fff;font-family:var(--font);
+    font-weight:700;padding:.58rem .85rem;border-radius:11px;cursor:pointer;font-size:.76rem;width:100%;margin-top:.55rem}
+  .btn:active{transform:translateY(1px)}
+  .cap{position:fixed;left:1.1rem;bottom:1.1rem;max-width:min(340px,64vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:.55rem .85rem;font-size:.73rem;color:var(--muted);
+    backdrop-filter:blur(10px);z-index:10}
+  .cap b{color:var(--text)}
+  @media(max-width:760px){.panel{bottom:5rem}.cap{display:none}}
+  .toast{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(.92);background:rgba(8,11,18,.96);
+    border:1px solid var(--neon);border-radius:14px;padding:.8rem 1.35rem;font-size:.9rem;font-weight:600;
+    opacity:0;transition:.28s;pointer-events:none;z-index:30;text-align:center;max-width:86vw}
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .loader{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="loader" id="loader">Собираю ядро…</div>
+
+<div class="hud">
+  <div class="brand"><span>✦</span><div><b>uniqpost · размножение</b><br><small>вариант A · демо</small></div></div>
+  <div class="stats">
+    <div class="stat">Ядер <b id="coresN">0</b></div>
+    <div class="stat">Версий <b id="vers">0</b></div>
+    <div class="stat">Разлёт <b id="reach">0</b></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>Размножение</h3>
+  <div class="row"><span>Оригинал</span><b>1</b></div>
+  <div class="row"><span>Версии</span><b id="pVers">0</b></div>
+  <div class="row"><span>Соцсети</span><b>5</b></div>
+  <button class="btn" id="seed">✦ Запустить размножение</button>
+</div>
+
+<div class="cap"><b>Смысл:</b> одно видео в центре → от него расходится веер уникальных версий → улетают в сети. Кликни по ядру.</div>
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const PALETTE=[0x2f7bff,0x58a6ff,0x7aa8ff,0x3ddcff,0x9b6cff,0x6f9bd8,0x4fd1ff];
+const SOCIALS=[
+  {short:'TT',color:'#00f2ea'},{short:'YT',color:'#ff2d2d'},{short:'VK',color:'#0077ff'},
+  {short:'IG',color:'#e1306c'},{short:'TG',color:'#2aabee'}
+];
+
+let scene,camera,renderer,controls,clock,raycaster,pointer;
+let cores=[], orbitRings=[], socialNodes=[], flare=[];
+let versionsTotal=0, reachTotal=0;
+
+init();
+
+function init(){
+  clock=new THREE.Clock();
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x05060a);
+  scene.fog=new THREE.Fog(0x05060a,22,60);
+  camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,160);
+  camera.position.set(0,7,22);
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+  scene.add(new THREE.AmbientLight(0x89aaff,.5));
+  const key=new THREE.DirectionalLight(0xffffff,1.1); key.position.set(6,16,10); scene.add(key);
+  const p1=new THREE.PointLight(0x2f7bff,90,40,2); p1.position.set(0,3,0); scene.add(p1);
+  const p2=new THREE.PointLight(0x9b6cff,50,40,2); p2.position.set(0,-6,0); scene.add(p2);
+  document.getElementById('app').appendChild(renderer.domElement);
+
+  controls=new OrbitControls(camera,renderer.domElement);
+  controls.target.set(0,1.2,0); controls.enableDamping=true; controls.dampingFactor=.08;
+  controls.maxPolarAngle=Math.PI/1.9; controls.minDistance=8; controls.maxDistance=42;
+  raycaster=new THREE.Raycaster(); pointer=new THREE.Vector2();
+
+  buildGrid(); buildSocials();
+  // 3 ядра-оригинала
+  for(let i=0;i<3;i++) seedCore(i,false);
+
+  addEventListener('resize',onResize);
+  renderer.domElement.addEventListener('pointerdown',onDown);
+  document.getElementById('seed').onclick=()=>seedCore(cores.length,true);
+  document.getElementById('loader').style.display='none';
+  animate();
+}
+
+function buildGrid(){
+  const g=new THREE.GridHelper(60,30,0x16294d,0x0c1526); g.position.y=-0.01; scene.add(g);
+  const glowPlane=new THREE.Mesh(new THREE.CircleGeometry(26,64),
+    new THREE.MeshBasicMaterial({color:0x0d1830,transparent:true,opacity:.35}));
+  glowPlane.rotation.x=-Math.PI/2; glowPlane.position.y=-.02; scene.add(glowPlane);
+}
+
+function buildSocials(){
+  SOCIALS.forEach((s,i)=>{
+    const ang=(i/(SOCIALS.length-1)-.5)*Math.PI*1.6;
+    const r=13;
+    const pos=new THREE.Vector3(Math.cos(ang)*r, 3.5+Math.sin(i*1.7)*2.2, Math.sin(ang)*r*0.75);
+    const mat=new THREE.MeshStandardMaterial({color:new THREE.Color(s.color),
+      emissive:new THREE.Color(s.color),emissiveIntensity:.45,roughness:.3,metalness:.5});
+    const node=new THREE.Mesh(new THREE.OctahedronGeometry(.55,0),mat);
+    node.position.copy(pos); scene.add(node);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.85,.022,8,40),
+      new THREE.MeshBasicMaterial({color:s.color,transparent:true,opacity:.4}));
+    ring.position.copy(pos); scene.add(ring);
+    socialNodes.push({...s,node,ring,pos,hits:0,phase:i});
+  });
+}
+
+function makePanel(color){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.25,.78,.1),
+    new THREE.MeshStandardMaterial({color,roughness:.32,metalness:.5,emissive:color,emissiveIntensity:.14}));
+  g.add(body);
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry),
+    new THREE.LineBasicMaterial({color:0xd6e8ff,transparent:true,opacity:.5})); g.add(edge);
+  const scr=new THREE.Mesh(new THREE.PlaneGeometry(1,.5),new THREE.MeshBasicMaterial({color:0x081120}));
+  scr.position.z=.052; g.add(scr);
+  const bar=new THREE.Mesh(new THREE.PlaneGeometry(1,.07),new THREE.MeshBasicMaterial({color}));
+  bar.position.set(0,-.24,.053); g.add(bar);
+  return g;
+}
+
+function seedCore(i,notify){
+  const color=PALETTE[i%PALETTE.length];
+  const core=makePanel(color);
+  const x=-7+i*3.4;
+  core.position.set(x,1.6,0);
+  core.userData={type:'core',color,burst:0,maxVersions:4+Math.floor(Math.random()*3)};
+  scene.add(core); cores.push(core);
+
+  // орбитальное кольцо
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(1.5,.02,6,60),
+    new THREE.MeshBasicMaterial({color,transparent:true,opacity:.28}));
+  ring.position.copy(core.position); ring.rotation.x=Math.PI/2.4; scene.add(ring);
+  core.userData.ring=ring;
+
+  if(notify) toast('✦ Новое ядро запущено');
+  burst(core);
+  updateHud();
+}
+
+// разлёт версий от ядра
+function burst(core){
+  const n=core.userData.maxVersions;
+  const color=core.userData.color;
+  for(let i=0;i<n;i++){
+    const v=makePanel(PALETTE[(i+2)%PALETTE.length]);
+    v.scale.set(.55,.55,.55);
+    v.position.copy(core.position);
+    scene.add(v);
+    const ang=(i/(n-1||1)-.5)*Math.PI*1.25;
+    const dist=3.5+Math.random()*2.5;
+    const target=new THREE.Vector3(
+      core.position.x+Math.sin(ang)*dist*0.5,
+      core.position.y+1.5+Math.cos(ang)*dist*0.7,
+      core.position.z+Math.cos(ang)*dist*0.5
+    );
+    const t0=clock.getElapsedTime();
+    const anim=()=>{
+      const k=Math.min(1,(clock.getElapsedTime()-t0)/1.0);
+      const e=k*k*(3-2*k);
+      v.position.lerpVectors(core.position,target,e);
+      v.rotation.y=e*Math.PI*2; v.rotation.z=e*Math.PI*.6;
+      if(k<1) requestAnimationFrame(anim);
+      else{ flyToSocial(v,target); }
+    };
+    anim();
+  }
+  versionsTotal+=n;
+  updateHud();
+}
+
+// версия улетает к соцсети
+function flyToSocial(v,from){
+  const s=socialNodes[Math.floor(Math.random()*socialNodes.length)];
+  const start=from.clone();
+  const target=s.pos.clone();
+  const t0=clock.getElapsedTime();
+  const dur=1.3+Math.random()*.5;
+  const anim=()=>{
+    const k=Math.min(1,(clock.getElapsedTime()-t0)/dur);
+    const e=k*k*(3-2*k);
+    v.position.lerpVectors(start,target,e);
+    v.position.y+=(1-e)*0+Math.sin(k*Math.PI)*1.2;
+    v.rotation.y=e*Math.PI*3;
+    v.scale.setScalar(.55*(1-e*0.6));
+    if(k<1) requestAnimationFrame(anim);
+    else{ scene.remove(v); pulse(s); }
+  };
+  anim();
+}
+
+function pulse(s){
+  s.hits++; reachTotal++;
+  s.node.material.emissiveIntensity=1.8;
+  s.node.scale.setScalar(1.35);
+  s.ring.scale.setScalar(1.5);
+  // кольцо-волна
+  const wave=new THREE.Mesh(new THREE.RingGeometry(.6,.72,48),
+    new THREE.MeshBasicMaterial({color:s.color,transparent:true,opacity:.7,side:THREE.DoubleSide}));
+  wave.position.copy(s.pos); wave.lookAt(camera.position); scene.add(wave);
+  const t0=clock.getElapsedTime();
+  const anim=()=>{
+    const k=Math.min(1,(clock.getElapsedTime()-t0)/.7);
+    wave.scale.setScalar(1+k*3.2);
+    wave.material.opacity=.7*(1-k);
+    if(k<1) requestAnimationFrame(anim); else scene.remove(wave);
+  };
+  anim();
+  setTimeout(()=>{ s.node.material.emissiveIntensity=.45; s.node.scale.setScalar(1); s.ring.scale.setScalar(1); },280);
+  updateHud();
+}
+
+function setPtr(e){ pointer.x=(e.clientX/innerWidth)*2-1; pointer.y=-(e.clientY/innerHeight)*2+1; }
+function onDown(e){
+  if(e.button!==0) return;
+  setPtr(e);
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObjects(cores,true);
+  if(!hits.length) return;
+  let o=hits[0].object; while(o.parent&&o.userData.type!=='core') o=o.parent;
+  if(o.userData.type==='core'){ burst(o); toast('✦ Размножение запущено'); }
+}
+
+function updateHud(){
+  document.getElementById('coresN').textContent=cores.length;
+  document.getElementById('vers').textContent=versionsTotal;
+  document.getElementById('pVers').textContent=versionsTotal;
+  document.getElementById('reach').textContent=reachTotal;
+}
+
+let timer;
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(timer); timer=setTimeout(()=>t.classList.remove('show'),1500); }
+function onResize(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); }
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  cores.forEach((c,i)=>{
+    c.position.y=1.6+Math.sin(t*1.4+i)*.12;
+    c.rotation.y=t*.7+i;
+    if(c.userData.ring){ c.userData.ring.rotation.z=t*.6+i; }
+  });
+  socialNodes.forEach(s=>{
+    s.node.rotation.y=t*.5+s.phase; s.node.rotation.x=t*.3;
+    s.ring.rotation.x=t*.4+s.phase;
+  });
+  controls.update();
+  renderer.render(scene,camera);
+}
+</script>
+</body>
+</html>

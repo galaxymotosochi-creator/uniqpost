@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uniqpost — Орбита (вариант B)</title>
+<style>
+  :root{--bg:#04050a;--neon:#2f7bff;--neon2:#58a6ff;--text:#eaf0ff;--muted:#8b9ac0;
+    --panel:rgba(8,11,18,.78);--line:rgba(70,130,255,.2);--font:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+  #app{position:fixed;inset:0}
+  .hud{position:fixed;top:0;left:0;right:0;padding:1rem 1.2rem;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:1rem;pointer-events:none;z-index:10;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:.5rem .85rem;backdrop-filter:blur(10px);pointer-events:auto}
+  .brand span{width:25px;height:25px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--neon2));
+    display:grid;place-items:center;font-size:.85rem}
+  .brand b{font-size:.84rem}.brand small{color:var(--muted);font-weight:500;font-size:.7rem}
+  .stats{display:flex;gap:.45rem;flex-wrap:wrap;pointer-events:auto}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:.45rem .75rem;
+    backdrop-filter:blur(10px);font-size:.74rem;display:flex;gap:.35rem;align-items:center}
+  .stat b{color:var(--neon2)}
+  .panel{position:fixed;right:1.1rem;bottom:1.1rem;width:min(255px,76vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:.85rem;backdrop-filter:blur(12px);z-index:10}
+  .panel h3{font-size:.7rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:.5rem;
+    display:flex;align-items:center;gap:.45rem}
+  .panel h3::before{content:'';width:2px;height:12px;background:var(--neon);border-radius:2px}
+  .row{display:flex;justify-content:space-between;font-size:.78rem;padding:.3rem 0;color:var(--muted)}
+  .row b{color:var(--text)}
+  .btn{background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;color:#fff;font-family:var(--font);
+    font-weight:700;padding:.58rem .85rem;border-radius:11px;cursor:pointer;font-size:.76rem;width:100%;margin-top:.55rem}
+  .btn:active{transform:translateY(1px)}
+  .cap{position:fixed;left:1.1rem;bottom:1.1rem;max-width:min(340px,64vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:.55rem .85rem;font-size:.73rem;color:var(--muted);
+    backdrop-filter:blur(10px);z-index:10}
+  .cap b{color:var(--text)}
+  @media(max-width:760px){.panel{bottom:5rem}.cap{display:none}}
+  .toast{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) scale(.92);background:rgba(8,11,18,.96);
+    border:1px solid var(--neon);border-radius:14px;padding:.8rem 1.35rem;font-size:.9rem;font-weight:600;
+    opacity:0;transition:.28s;pointer-events:none;z-index:30;text-align:center;max-width:86vw}
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .loader{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="loader" id="loader">Запускаю орбиту…</div>
+
+<div class="hud">
+  <div class="brand"><span>🪐</span><div><b>uniqpost · орбита</b><br><small>вариант B · демо</small></div></div>
+  <div class="stats">
+    <div class="stat">На орбите <b id="orb">0</b></div>
+    <div class="stat">Доставлено <b id="deliv">0</b></div>
+    <div class="stat">Скорость <b id="spd">0</b></div>
+  </div>
+</div>
+
+<div class="panel">
+  <h3>Орбита публикации</h3>
+  <div class="row"><span>Ядро</span><b>1 оригинал</b></div>
+  <div class="row"><span>Спутники</span><b id="satN">0</b></div>
+  <div class="row"><span>Сети</span><b>5</b></div>
+  <button class="btn" id="launch">🚀 Запустить видео</button>
+</div>
+
+<div class="cap"><b>Смысл:</b> оригинал — ядро, версии — спутники на орбите. Каждый оборот — улёт версии в соцсеть. Кликни по ядру.</div>
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const PALETTE=[0x2f7bff,0x58a6ff,0x7aa8ff,0x3ddcff,0x9b6cff,0x6f9bd8,0x4fd1ff];
+const SOCIALS=[
+  {short:'TT',color:'#00f2ea'},{short:'YT',color:'#ff2d2d'},{short:'VK',color:'#0077ff'},
+  {short:'IG',color:'#e1306c'},{short:'TG',color:'#2aabee'}
+];
+
+let scene,camera,renderer,controls,clock,raycaster,pointer;
+let planets=[], satellites=[], socialNodes=[];
+let delivered=0;
+
+init();
+
+function init(){
+  clock=new THREE.Clock();
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x04050a);
+  scene.fog=new THREE.Fog(0x04050a,26,70);
+  camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,.1,180);
+  camera.position.set(0,9,26);
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+  scene.add(new THREE.AmbientLight(0x8fb0ff,.45));
+  const key=new THREE.DirectionalLight(0xffffff,1.05); key.position.set(8,18,12); scene.add(key);
+  const core=new THREE.PointLight(0x2f7bff,110,50,2); core.position.set(0,2,0); scene.add(core);
+  const rim=new THREE.PointLight(0x9b6cff,55,60,2); rim.position.set(0,-8,0); scene.add(rim);
+  document.getElementById('app').appendChild(renderer.domElement);
+
+  controls=new OrbitControls(camera,renderer.domElement);
+  controls.target.set(0,1.4,0); controls.enableDamping=true; controls.dampingFactor=.08;
+  controls.maxPolarAngle=Math.PI/1.9; controls.minDistance=10; controls.maxDistance=50;
+  raycaster=new THREE.Raycaster(); pointer=new THREE.Vector2();
+
+  buildStars(); buildSocials();
+  for(let i=0;i<2;i++) makePlanet(i);
+
+  addEventListener('resize',onResize);
+  renderer.domElement.addEventListener('pointerdown',onDown);
+  document.getElementById('launch').onclick=()=>makePlanet(planets.length);
+  document.getElementById('loader').style.display='none';
+  animate();
+}
+
+function buildStars(){
+  const N=900, pos=new Float32Array(N*3);
+  for(let i=0;i<N;i++){
+    pos[i*3]=(Math.random()-.5)*160;
+    pos[i*3+1]=(Math.random()-.5)*100;
+    pos[i*3+2]=(Math.random()-.5)*160;
+  }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x7fa8ff,size:.34,transparent:true,opacity:.65})));
+}
+
+function makeVideo(color,scale=1){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.15,.72,.1),
+    new THREE.MeshStandardMaterial({color,roughness:.32,metalness:.5,emissive:color,emissiveIntensity:.16}));
+  g.add(body);
+  g.add(new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry),
+    new THREE.LineBasicMaterial({color:0xd6e8ff,transparent:true,opacity:.5})));
+  const scr=new THREE.Mesh(new THREE.PlaneGeometry(.92,.48),new THREE.MeshBasicMaterial({color:0x081120}));
+  scr.position.z=.052; g.add(scr);
+  const bar=new THREE.Mesh(new THREE.PlaneGeometry(.92,.07),new THREE.MeshBasicMaterial({color}));
+  bar.position.set(0,-.22,.053); g.add(bar);
+  g.scale.setScalar(scale);
+  return g;
+}
+
+function makePlanet(i){
+  const color=PALETTE[i%PALETTE.length];
+  const core=makeVideo(color,1.5);
+  core.position.set(-9+i*4.5, 1.8, 0);
+  core.userData={type:'core',color,radius:3.2+i*.4,speed:.55+i*.12,phase:i,satCount:0};
+  scene.add(core); planets.push(core);
+
+  // орбиты-кольца (вокруг ядра — визуально 2 наклонных)
+  for(let r=0;r<2;r++){
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(core.userData.radius+r*1.1,.018,6,72),
+      new THREE.MeshBasicMaterial({color,transparent:true,opacity:.22-r*.06}));
+    ring.position.copy(core.position);
+    ring.rotation.x=Math.PI/2.6+r*.35; ring.rotation.y=r*.7;
+    scene.add(ring);
+    (core.userData.rings=core.userData.rings||[]).push(ring);
+  }
+
+  // спутники
+  for(let s=0;s<4;s++) addSatellite(core,s);
+  toast('🪐 Орбита запущена');
+}
+
+function addSatellite(core,s){
+  const sat=makeVideo(PALETTE[(s+2)%PALETTE.length],.5);
+  scene.add(sat);
+  core.userData.satCount++;
+  satellites.push({mesh:sat,core,ang:(s/4)*Math.PI*2+rnd(),ring:(s%2),s,r:core.userData.radius+(s%2)*1.1,speed:core.userData.speed*(1+(s%2)*.35),tilt:(s%2)?-Math.PI/2.6:Math.PI/2.6});
+  updateHud();
+}
+function rnd(){ return Math.random(); }
+
+function buildSocials(){
+  SOCIALS.forEach((s,i)=>{
+    const ang=(i/(SOCIALS.length-1)-.5)*Math.PI*1.7;
+    const r=16;
+    const pos=new THREE.Vector3(Math.cos(ang)*r, 4+Math.sin(i*1.6)*2.4, Math.sin(ang)*r*.7);
+    const mat=new THREE.MeshStandardMaterial({color:new THREE.Color(s.color),
+      emissive:new THREE.Color(s.color),emissiveIntensity:.45,roughness:.3,metalness:.5});
+    const node=new THREE.Mesh(new THREE.IcosahedronGeometry(.6,1),mat);
+    node.position.copy(pos); scene.add(node);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.9,.022,8,44),
+      new THREE.MeshBasicMaterial({color:s.color,transparent:true,opacity:.4}));
+    ring.position.copy(pos); scene.add(ring);
+    socialNodes.push({...s,node,ring,pos,phase:i});
+  });
+}
+
+// улёт версии с орбиты в соцсеть
+function deliverFrom(core){
+  if(core.userData.satCount<=0) return;
+  // берём первый спутник и превращаем в «доставку»
+  const idx=satellites.findIndex(s=>s.core===core);
+  if(idx===-1) return;
+  const sat=satellites[idx];
+  satellites.splice(idx,1);
+  core.userData.satCount--;
+  scene.remove(sat.mesh);
+
+  const s=socialNodes[Math.floor(Math.random()*socialNodes.length)];
+  const v=makeVideo(PALETTE[Math.floor(Math.random()*PALETTE.length)],.5);
+  const start=sat.mesh.position.clone();
+  scene.add(v);
+  const t0=clock.getElapsedTime();
+  const dur=1.2;
+  const anim=()=>{
+    const k=Math.min(1,(clock.getElapsedTime()-t0)/dur);
+    const e=k*k*(3-2*k);
+    v.position.lerpVectors(start,s.pos,e);
+    v.rotation.y=e*Math.PI*3;
+    v.scale.setScalar(.5*(1-e*.5));
+    if(k<1) requestAnimationFrame(anim);
+    else{ scene.remove(v); pulse(s); delivered++; updateHud(); addSatellite(core,core.userData.satCount); }
+  };
+  anim();
+}
+
+function pulse(s){
+  s.node.material.emissiveIntensity=1.9;
+  const wave=new THREE.Mesh(new THREE.RingGeometry(.6,.72,48),
+    new THREE.MeshBasicMaterial({color:s.color,transparent:true,opacity:.7,side:THREE.DoubleSide}));
+  wave.position.copy(s.pos); wave.lookAt(camera.position); scene.add(wave);
+  const t0=clock.getElapsedTime();
+  const anim=()=>{
+    const k=Math.min(1,(clock.getElapsedTime()-t0)/.7);
+    wave.scale.setScalar(1+k*3);
+    wave.material.opacity=.7*(1-k);
+    if(k<1) requestAnimationFrame(anim); else scene.remove(wave);
+  };
+  anim();
+  setTimeout(()=>{ s.node.material.emissiveIntensity=.45; },280);
+}
+
+function setPtr(e){ pointer.x=(e.clientX/innerWidth)*2-1; pointer.y=-(e.clientY/innerHeight)*2+1; }
+function onDown(e){
+  if(e.button!==0) return;
+  setPtr(e);
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObjects(planets,true);
+  if(!hits.length) return;
+  let o=hits[0].object; while(o.parent&&o.userData.type!=='core') o=o.parent;
+  if(o.userData.type==='core'){ deliverFrom(o); toast('➤ Версия отправлена в сеть'); }
+}
+
+function updateHud(){
+  const satTotal=satellites.length;
+  document.getElementById('orb').textContent=satTotal;
+  document.getElementById('satN').textContent=satTotal;
+  document.getElementById('deliv').textContent=delivered;
+  document.getElementById('spd').textContent=planets.length;
+}
+
+let timer;
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(timer); timer=setTimeout(()=>t.classList.remove('show'),1400); }
+function onResize(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); }
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  planets.forEach((p,i)=>{
+    p.position.y=1.8+Math.sin(t*.8+i)*.18;
+    p.rotation.y=t*.5+i;
+    if(p.userData.rings) p.userData.rings.forEach((r,k)=>{ r.rotation.z=t*.25*(k+1); });
+  });
+  satellites.forEach(s=>{
+    s.ang+=s.speed*.012;
+    const c=s.core.position;
+    const x=Math.cos(s.ang)*s.r;
+    const z=Math.sin(s.ang)*s.r;
+    const tilt=s.tilt;
+    const y=Math.sin(tilt)*z;
+    const zz=Math.cos(tilt)*z;
+    s.mesh.position.set(c.x+x,c.y+y,c.z+zz);
+    s.mesh.rotation.y=t*1.4;
+  });
+  socialNodes.forEach(s=>{ s.node.rotation.y=t*.5+s.phase; s.ring.rotation.x=t*.35+s.phase; });
+  controls.update();
+  renderer.render(scene,camera);
+}
+</script>
+</body>
+</html>
