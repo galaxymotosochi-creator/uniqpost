@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>uniqpost — 3D-зоны (идея 2)</title>
+<style>
+  :root{--bg:#07080c;--neon:#2f7bff;--neon2:#58a6ff;--text:#e8eefc;--muted:#8fa0c4;
+    --panel:rgba(10,14,22,.84);--line:rgba(70,130,255,.22);--ok:#3ddc84;--font:'Inter',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+  #app{position:fixed;inset:0}
+  .hud{position:fixed;top:0;left:0;right:0;padding:1rem 1.2rem;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:1rem;pointer-events:none;z-index:10;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:.55rem .9rem;backdrop-filter:blur(10px);pointer-events:auto}
+  .brand span{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--neon2));
+    display:grid;place-items:center;font-size:.9rem}
+  .brand b{font-size:.86rem}.brand small{color:var(--muted);font-weight:500;font-size:.72rem}
+  .stats{display:flex;gap:.5rem;flex-wrap:wrap;pointer-events:auto}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.5rem .8rem;
+    backdrop-filter:blur(10px);font-size:.76rem;display:flex;gap:.4rem;align-items:center}
+  .stat b{color:var(--neon2)}
+  .zones{position:fixed;right:1.2rem;bottom:1.2rem;width:min(280px,74vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:.9rem;backdrop-filter:blur(12px);z-index:10}
+  .zones h3{font-size:.72rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:.6rem;
+    display:flex;align-items:center;gap:.45rem}
+  .zones h3::before{content:'';width:2px;height:13px;background:var(--neon);border-radius:2px}
+  .zone{display:flex;align-items:center;gap:.55rem;padding:.5rem;border-radius:10px;
+    background:rgba(255,255,255,.03);margin-bottom:.4rem;font-size:.79rem}
+  .zone .sw{width:11px;height:11px;border-radius:3px;flex:none}
+  .zone .c{margin-left:auto;color:var(--neon2);font-weight:700;font-size:.74rem}
+  .btn{background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;color:#fff;font-family:var(--font);
+    font-weight:700;padding:.6rem .9rem;border-radius:11px;cursor:pointer;font-size:.78rem;width:100%;margin-top:.5rem}
+  .btn:active{transform:translateY(1px)}
+  .tagline{position:fixed;left:1.2rem;bottom:1.2rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:.55rem .9rem;font-size:.73rem;color:var(--muted);backdrop-filter:blur(10px);z-index:10;max-width:min(350px,70vw)}
+  .hint{position:fixed;left:50%;bottom:1.3rem;transform:translateX(-50%);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:.5rem .95rem;font-size:.72rem;color:var(--muted);
+    backdrop-filter:blur(10px);z-index:10}
+  @media(max-width:760px){.zones{bottom:5.2rem}.tagline{display:none}.hint{display:none}}
+  .toast{position:fixed;top:48%;left:50%;transform:translate(-50%,-50%) scale(.92);background:rgba(10,14,22,.96);
+    border:1px solid var(--neon);border-radius:14px;padding:.9rem 1.5rem;font-size:.95rem;font-weight:600;
+    opacity:0;transition:.3s;pointer-events:none;z-index:30;text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .loader{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="loader" id="loader">Строю зоны…</div>
+
+<div class="hud">
+  <div class="brand"><span>🎬</span><div><b>uniqpost · склад видео</b><br><small>3D · демо идеи 2</small></div></div>
+  <div class="stats">
+    <div class="stat">Всего <b id="total">0</b></div>
+    <div class="stat">Готово <b id="doneN">0</b></div>
+    <div class="stat">Кредиты <b id="credits">0</b></div>
+  </div>
+</div>
+
+<div class="zones">
+  <h3>Зоны склада</h3>
+  <div class="zone"><span class="sw" style="background:#ffcc4d"></span><span>Новые (вход)</span><span class="c" id="z1">0</span></div>
+  <div class="zone"><span class="sw" style="background:#2f7bff"></span><span>Оригиналы</span><span class="c" id="z2">0</span></div>
+  <div class="zone"><span class="sw" style="background:#9b6cff"></span><span>Уникализация</span><span class="c" id="z3">0</span></div>
+  <div class="zone"><span class="sw" style="background:#3ddc84"></span><span>Готово</span><span class="c" id="z4">0</span></div>
+  <button class="btn" id="addBtn">＋ Новое видео</button>
+</div>
+
+<div class="tagline">Идея 2: видео лежат на полках по зонам. Клик по видео → оно перемещается в следующую зону.</div>
+<div class="hint">ЛКМ — вращение · колесо — зум · клик по видео — сдвинуть по конвейеру</div>
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// зоны: 0 новые, 1 оригиналы, 2 уникализация, 3 готово
+const ZONES = [
+  {from:-9, to:-6, color:0xffcc4d, label:'Новые'},
+  {from:-3.5, to:-0.5, color:0x2f7bff, label:'Оригиналы'},
+  {from:2, to:5, color:0x9b6cff, label:'Уникализация'},
+  {from:7.5, to:10.5, color:0x3ddc84, label:'Готово'},
+];
+const PALETTE = [0x2f7bff,0x58a6ff,0x7aa8ff,0x3ddcff,0x9b6cff];
+const SHELF_Y = [0.75, 1.75, 2.75];
+
+let scene,camera,renderer,controls,raycaster,pointer,clock;
+let videos=[], zones=[], slots=[];
+let state={credits:0};
+
+init();
+
+function init(){
+  clock=new THREE.Clock();
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x07080c);
+  scene.fog=new THREE.Fog(0x07080c,20,44);
+
+  camera=new THREE.PerspectiveCamera(52,innerWidth/innerHeight,0.1,140);
+  camera.position.set(6,8.5,18);
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  document.getElementById('app').appendChild(renderer.domElement);
+
+  controls=new OrbitControls(camera,renderer.domElement);
+  controls.target.set(0,1.6,0); controls.enableDamping=true; controls.dampingFactor=.08;
+  controls.maxPolarAngle=Math.PI/2.05; controls.minDistance=6; controls.maxDistance=34;
+
+  raycaster=new THREE.Raycaster(); pointer=new THREE.Vector2();
+
+  buildLights(); buildRoom(); buildZones();
+  buildZone({from:-9,to:-6,color:0xffcc4d,label:'Новые'});
+  buildZone({from:-3.5,to:-0.5,color:0x2f7bff,label:'Оригиналы'});
+  buildZone({from:2,to:5,color:0x9b6cff,label:'Уникализация'});
+  buildZone({from:7.5,to:10.5,color:0x3ddc84,label:'Готово'});
+
+  for(let i=0;i<5;i++) spawnVideo(0);
+
+  addEventListener('resize',onResize);
+  renderer.domElement.addEventListener('pointerdown',onDown);
+  document.getElementById('addBtn').onclick=()=>{ for(let i=0;i<3;i++) spawnVideo(0); toast('Добавлено 3 новых видео'); };
+
+  document.getElementById('loader').style.display='none';
+  animate();
+}
+
+function mat(c,o={}){ return new THREE.MeshStandardMaterial({color:c,roughness:.45,metalness:.4,...o}); }
+
+function buildLights(){
+  scene.add(new THREE.HemisphereLight(0x7fa8ff,0x080a10,.5));
+  const key=new THREE.DirectionalLight(0xffffff,1.3); key.position.set(6,15,10); key.castShadow=true;
+  key.shadow.mapSize.set(2048,2048); key.shadow.camera.left=-20; key.shadow.camera.right=20;
+  key.shadow.camera.top=20; key.shadow.camera.bottom=-20; scene.add(key);
+  const p1=new THREE.PointLight(0x2f7bff,70,30,2); p1.position.set(-10,5,6); scene.add(p1);
+  const p2=new THREE.PointLight(0x58a6ff,60,30,2); p2.position.set(11,4.5,-4); scene.add(p2);
+}
+
+function buildRoom(){
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(50,50),mat(0x0c111a,{roughness:.9,metalness:.1}));
+  floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+  const grid=new THREE.GridHelper(50,50,0x1b3668,0x111f33); grid.position.y=.01; scene.add(grid);
+  const wall=new THREE.MeshStandardMaterial({color:0x0a0f18,roughness:.95,side:THREE.DoubleSide});
+  const back=new THREE.Mesh(new THREE.PlaneGeometry(34,9),wall); back.position.set(0,4.5,-9); scene.add(back);
+}
+
+function buildZones(){
+  // только маркеры-заголовки сделаны в buildZone
+}
+
+function buildZone(z){
+  const w = z.to - z.from;
+  const cx = (z.from + z.to)/2;
+  // пол под зоной
+  const pad=new THREE.Mesh(new THREE.BoxGeometry(w,.08,7),mat(0x0f1725,{roughness:.85}));
+  pad.position.set(cx,.04,0); pad.receiveShadow=true; scene.add(pad);
+  const rim=new THREE.Mesh(new THREE.BoxGeometry(w,.02,7),new THREE.MeshBasicMaterial({color:z.color,transparent:true,opacity:.18}));
+  rim.position.set(cx,.1,0); scene.add(rim);
+
+  // стеллаж: 3 полки
+  SHELF_Y.forEach((y,li)=>{
+    // доска
+    const board=new THREE.Mesh(new THREE.BoxGeometry(w,.07,6.6),mat(0x1a2438,{roughness:.6,metalness:.4}));
+    board.position.set(cx,y-.18,0); board.castShadow=true; board.receiveShadow=true; scene.add(board);
+    // неоновая полоса
+    const strip=new THREE.Mesh(new THREE.BoxGeometry(w-.2,.03,.05),new THREE.MeshBasicMaterial({color:z.color}));
+    strip.position.set(cx,y-.13,3.3); scene.add(strip);
+    // слоты: по 3 на зону
+    for(let s=0;s<3;s++){
+      const sz = -1.6 + s*1.6;
+      const marker=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.5),new THREE.MeshBasicMaterial({color:z.color,transparent:true,opacity:.06}));
+      marker.rotation.x=-Math.PI/2; marker.position.set(cx,y-.135,sz); scene.add(marker);
+      slots.push({world:new THREE.Vector3(cx,y-.10,sz),zone:z,item:null,marker,level:y});
+    }
+  });
+  // стойки зоны
+  for(const dx of [-w/2+0.1, w/2-0.1]){
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,3.4,.12),mat(0x1b2740,{roughness:.6,metalness:.5}));
+    leg.position.set(cx+dx,1.7,-3.2); leg.castShadow=true; scene.add(leg);
+    const leg2=leg.clone(); leg2.position.z=3.2; scene.add(leg2);
+  }
+  // подсветка-планка сверху
+  const lamp=new THREE.Mesh(new THREE.BoxGeometry(w-.4,.12,.3),mat(0x1c2942));
+  lamp.position.set(cx,3.7,0); scene.add(lamp);
+  const glow=new THREE.PointLight(z.color,30,12,2); glow.position.set(cx,3.4,0); scene.add(glow);
+
+  zones.push(z);
+}
+
+function makeVideo(colorIdx){
+  const g=new THREE.Group();
+  const c=PALETTE[colorIdx%PALETTE.length];
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.0,.62,.08),mat(c,{roughness:.35,metalness:.4}));
+  body.castShadow=true; g.add(body);
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry),
+    new THREE.LineBasicMaterial({color:0xbfe0ff,transparent:true,opacity:.5})); g.add(edge);
+  // "экран" — имитация кадра видео
+  const screen=new THREE.Mesh(new THREE.PlaneGeometry(.82,.42),new THREE.MeshBasicMaterial({color:0x0a1526}));
+  screen.position.z=.05; g.add(screen);
+  // уголок play
+  const play=new THREE.Mesh(new THREE.CircleGeometry(.1,3),new THREE.MeshBasicMaterial({color:0x58a6ff}));
+  play.position.set(0,0,.06); g.add(play);
+  g.userData={zoneIdx:0};
+  return g;
+}
+
+function freeSlot(zoneIdx){
+  return slots.find(s=>s.zone.from===ZONES[zoneIdx].from && !s.item);
+}
+
+function spawnVideo(zoneIdx){
+  const slot=freeSlot(0);
+  const v=makeVideo(videos.length);
+  if(slot){ slot.item=v; v.position.copy(slot.world); v.position.y+=0.31; }
+  else { v.position.set(-8+Math.random()*2,3.6,3.1); }
+  v.userData.zoneIdx=0;
+  scene.add(v); videos.push(v);
+  updateHud();
+}
+
+function updateHud(){
+  const counts=[0,0,0,0];
+  videos.forEach(v=>counts[v.userData.zoneIdx]++);
+  document.getElementById('z1').textContent=counts[0];
+  document.getElementById('z2').textContent=counts[1];
+  document.getElementById('z3').textContent=counts[2];
+  document.getElementById('z4').textContent=counts[3];
+  document.getElementById('total').textContent=videos.length;
+  document.getElementById('doneN').textContent=counts[3];
+  document.getElementById('credits').textContent=state.credits;
+}
+
+function setPtr(e){ pointer.x=(e.clientX/innerWidth)*2-1; pointer.y=-(e.clientY/innerHeight)*2+1; }
+
+function onDown(e){
+  if(e.button!==0) return;
+  setPtr(e);
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObjects(videos,true);
+  if(!hits.length) return;
+  let o=hits[0].object; while(o.parent && o.userData.zoneIdx===undefined) o=o.parent;
+  advance(o);
+}
+
+function advance(v){
+  const from=v.userData.zoneIdx;
+  if(from>=3){ toast('Видео уже готово ✅'); return; }
+  const to=from+1;
+  // освобождаем старый слот
+  const os=slots.find(s=>s.item===v); if(os) os.item=null;
+  const ns=freeSlot(to);
+  const start=v.position.clone();
+  const Z=ZONES[to];
+  const target=ns?ns.world.clone().add(new THREE.Vector3(0,0.31,0))
+                 : new THREE.Vector3((Z.from+Z.to)/2,3.6,3.1);
+  v.userData.zoneIdx=to;
+  if(ns) ns.item=v;
+  const t0=clock.getElapsedTime(); const dur=0.75;
+  const step=()=>{
+    const k=Math.min(1,(clock.getElapsedTime()-t0)/dur);
+    const e=k*k*(3-2*k);
+    v.position.lerpVectors(start,target,e);
+    v.position.y=start.y+(target.y-start.y)*e+Math.sin(k*Math.PI)*0.7;
+    v.rotation.y=e*Math.PI*2;
+    if(k<1) requestAnimationFrame(step);
+    else{
+      v.rotation.y=0;
+      if(to===3){ state.credits+=120; toast('✅ Видео готово (+120)'); }
+      else if(to===2){ toast('⚙️ Уникализация началась…'); }
+      else { toast('📁 Перемещено: '+Z.label); }
+      updateHud();
+    }
+  };
+  step();
+  updateHud();
+}
+
+let timer;
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(timer); timer=setTimeout(()=>t.classList.remove('show'),1600); }
+
+function onResize(){ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); }
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t=clock.getElapsedTime();
+  videos.forEach((v,i)=>{ if(v.userData.zoneIdx<3) v.position.y+=0; });
+  slots.forEach((s,i)=>{ if(!s.item) s.marker.material.opacity=0.05+Math.sin(t*2+i)*0.03; else s.marker.material.opacity=0; });
+  controls.update();
+  renderer.render(scene,camera);
+}
+</script>
+</body>
+</html>
