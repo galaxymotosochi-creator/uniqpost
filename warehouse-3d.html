@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Склад 3D — демо</title>
+<style>
+  :root{
+    --bg:#070a12; --neon:#2f7bff; --neon2:#58a6ff; --text:#e8eefc; --muted:#8fa0c4;
+    --panel:rgba(12,18,31,.82); --line:rgba(80,140,255,.22); --font:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+  #app{position:fixed;inset:0}
+
+  .hud{position:fixed;top:0;left:0;right:0;padding:1rem 1.2rem;display:flex;justify-content:space-between;
+    align-items:flex-start;gap:1rem;pointer-events:none;z-index:10;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:.6rem;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:.55rem .9rem;backdrop-filter:blur(10px);pointer-events:auto}
+  .brand span{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--neon2));
+    display:grid;place-items:center;font-size:.9rem}
+  .brand b{font-size:.86rem}
+  .brand small{color:var(--muted);font-weight:500;font-size:.72rem}
+
+  .stats{display:flex;gap:.5rem;flex-wrap:wrap;pointer-events:auto}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.5rem .8rem;
+    backdrop-filter:blur(10px);font-size:.76rem;display:flex;gap:.4rem;align-items:center}
+  .stat b{color:var(--neon2)}
+  .bar{position:fixed;left:1.2rem;bottom:1.2rem;width:min(320px,60vw);z-index:10}
+  .bar .lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:.35rem}
+  .bar .track{height:8px;background:rgba(12,18,31,.85);border:1px solid var(--line);border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--neon),var(--neon2));transition:.35s}
+
+  .panel{position:fixed;right:1.2rem;bottom:1.2rem;width:min(300px,72vw);background:var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:.9rem;backdrop-filter:blur(12px);z-index:10}
+  .panel h3{font-size:.72rem;text-transform:uppercase;letter-spacing:1.3px;color:var(--muted);margin-bottom:.6rem;
+    display:flex;align-items:center;gap:.45rem}
+  .panel h3::before{content:'';width:2px;height:13px;background:var(--neon);border-radius:2px}
+  .order{display:flex;align-items:center;gap:.5rem;padding:.45rem .55rem;border-radius:10px;
+    background:rgba(255,255,255,.03);margin-bottom:.4rem;font-size:.8rem;transition:.3s}
+  .order.ready{background:rgba(61,220,132,.10);box-shadow:inset 0 0 0 1px rgba(61,220,132,.35)}
+  .order.done{opacity:.32;text-decoration:line-through}
+  .order .dot{width:7px;height:7px;border-radius:50%;background:#ffcc4d;flex:none}
+  .order.ready .dot{background:#3ddc84;box-shadow:0 0 9px rgba(61,220,132,.7)}
+
+  .hint{position:fixed;left:50%;bottom:1.3rem;transform:translateX(-50%);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:.5rem .95rem;font-size:.73rem;color:var(--muted);
+    backdrop-filter:blur(10px);z-index:10;text-align:center}
+  @media(max-width:700px){ .panel{bottom:5.5rem} .bar{bottom:auto;top:5.2rem} .hint{display:none} }
+
+  .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:rgba(12,18,31,.95);
+    border:1px solid var(--neon);border-radius:14px;padding:1rem 1.6rem;font-size:1rem;font-weight:600;
+    opacity:0;transition:.3s;pointer-events:none;z-index:30;text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+  .btn{background:linear-gradient(135deg,var(--neon),var(--neon2));border:none;color:#fff;font-family:var(--font);
+    font-weight:700;padding:.55rem .9rem;border-radius:11px;cursor:pointer;font-size:.76rem;width:100%;margin-top:.5rem}
+  .btn:active{transform:translateY(1px)}
+  .loader{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50;font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="loader" id="loader">Собираю 3D-склад…</div>
+
+<div class="hud">
+  <div class="brand"><span>📦</span><div><b>Склад 3D</b><br><small>демо · uniqpost</small></div></div>
+  <div class="stats">
+    <div class="stat">Уровень <b id="lvlNum">1</b></div>
+    <div class="stat">Очки <b id="score">0</b></div>
+    <div class="stat">Собрано <b id="doneCount">0</b>/<b id="totalCount">0</b></div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="lbl">Прогресс уровня</div>
+  <div class="track"><i id="lvlBar"></i></div>
+</div>
+
+<div class="panel">
+  <h3>Заказы</h3>
+  <div id="orders"></div>
+  <button class="btn" id="shipBtn">🔄 Новая поставка</button>
+</div>
+
+<div class="hint">ЛКМ — вращение · Колесо — зум · ПКМ — сдвиг · Клик по коробке — взять/поставить</div>
+<div class="toast" id="toast"></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── Товары ─────────────────────────────────────────────────────
+const GOODS = [
+  {id:'tv', n:'Телевизор', color:0x2f7bff, size:[1.1,0.7,0.12], p:45000},
+  {id:'ph', n:'Смартфон',  color:0x58a6ff, size:[0.42,0.8,0.1], p:32000},
+  {id:'lp', n:'Ноутбук',   color:0x7aa8ff, size:[1.0,0.12,0.7], p:68000},
+  {id:'hp', n:'Наушники',  color:0x9b6cff, size:[0.6,0.6,0.5],  p:7900},
+  {id:'kb', n:'Клавиатура',color:0x4d7fe0, size:[0.9,0.12,0.4], p:3400},
+  {id:'ms', n:'Мышь',      color:0x6f9bd8, size:[0.3,0.16,0.45],p:1900},
+  {id:'cm', n:'Камера',    color:0x3a6fd8, size:[0.55,0.45,0.4],p:54000},
+  {id:'wt', n:'Часы',      color:0x8fb6ff, size:[0.35,0.35,0.2],p:12900},
+  {id:'sp', n:'Колонка',   color:0x5f8fe8, size:[0.4,0.7,0.4],  p:5600},
+  {id:'gd', n:'Планшет',   color:0x7aa0e8, size:[0.75,0.55,0.1],p:27000},
+];
+
+const LEVELS = [{goal:2},{goal:3},{goal:4},{goal:5}];
+const SHELF_XS = [-3.4, 0, 3.4];       // три стеллажа
+const SHELF_LEVELS = [0.55, 1.35, 2.15]; // три полки по высоте
+const SLOT_ZS = [-0.55, 0, 0.55];
+
+let scene, camera, renderer, controls, raycaster, pointer;
+let draggable = [], shelfSlots = [], takenItem = null, hoverItem = null;
+let state = { level:1, score:0, ordersDone:0, orders:[], shipping:[] };
+
+const clock = new THREE.Clock();
+
+init();
+
+function init(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x070a12);
+  scene.fog = new THREE.Fog(0x070a12, 14, 30);
+
+  camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 100);
+  camera.position.set(7.5, 6, 9);
+
+  renderer = new THREE.WebGLRenderer({ antialias:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.getElementById('app').appendChild(renderer.domElement);
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 1.2, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI/2.05;
+  controls.minDistance = 3.5;
+  controls.maxDistance = 20;
+
+  raycaster = new THREE.Raycaster();
+  pointer = new THREE.Vector2();
+
+  buildLights();
+  buildFloor();
+  buildShelves();
+  buildRack();
+
+  newShipment(false);
+  buildOrders();
+  renderOrders();
+  updateHud();
+
+  addEventListener('resize', onResize);
+  renderer.domElement.addEventListener('pointerdown', onPointerDown);
+  renderer.domElement.addEventListener('pointermove', onPointerMove);
+  document.getElementById('shipBtn').onclick = () => newShipment(true);
+
+  document.getElementById('loader').style.display = 'none';
+  animate();
+}
+
+// ── Сцена ──────────────────────────────────────────────────────
+function buildLights(){
+  scene.add(new THREE.HemisphereLight(0x88aaff, 0x0a0e18, 0.55));
+  const key = new THREE.DirectionalLight(0xffffff, 1.5);
+  key.position.set(6, 12, 8); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -12; key.shadow.camera.right = 12;
+  key.shadow.camera.top = 12; key.shadow.camera.bottom = -12;
+  scene.add(key);
+  const neon1 = new THREE.PointLight(0x2f7bff, 60, 22, 2); neon1.position.set(-6, 4, 5); scene.add(neon1);
+  const neon2 = new THREE.PointLight(0x58a6ff, 45, 22, 2); neon2.position.set(7, 3.5, -5); scene.add(neon2);
+}
+
+function buildFloor(){
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 40),
+    new THREE.MeshStandardMaterial({ color:0x0d1421, roughness:0.85, metalness:0.15 })
+  );
+  floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+  const grid = new THREE.GridHelper(40, 40, 0x1d3a6e, 0x122239);
+  grid.position.y = 0.01; scene.add(grid);
+
+  // стены
+  const wallMat = new THREE.MeshStandardMaterial({ color:0x0b111d, roughness:0.95, side:THREE.DoubleSide });
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(24, 7), wallMat);
+  back.position.set(0, 3.5, -6.5); scene.add(back);
+  const left = new THREE.Mesh(new THREE.PlaneGeometry(22, 7), wallMat);
+  left.rotation.y = Math.PI/2; left.position.set(-11, 3.5, 0); scene.add(left);
+}
+
+function mat(color, opts={}){
+  return new THREE.MeshStandardMaterial({ color, roughness:0.45, metalness:0.35, ...opts });
+}
+
+function buildShelves(){
+  const frameMat = mat(0x1b2740, { roughness:0.6, metalness:0.5 });
+  const boardMat = mat(0x24324f, { roughness:0.5, metalness:0.4 });
+
+  SHELF_XS.forEach(sx=>{
+    const g = new THREE.Group();
+    // стойки
+    [-0.95, 0.95].forEach(dx=>{
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.8, 0.1), frameMat);
+      leg.position.set(dx, 1.4, 0); leg.castShadow = true; g.add(leg);
+    });
+    // полки
+    SHELF_LEVELS.forEach(y=>{
+      const board = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.07, 1.5), boardMat);
+      board.position.set(0, y-0.35, 0); board.castShadow = true; board.receiveShadow = true; g.add(board);
+      // подсветка полки
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.02, 0.05),
+        new THREE.MeshBasicMaterial({ color:0x2f7bff }));
+      strip.position.set(0, y-0.30, 0.72); g.add(strip);
+      // слоты
+      SLOT_ZS.forEach(sz=>{
+        const marker = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.4, 0.42),
+          new THREE.MeshBasicMaterial({ color:0x2f7bff, transparent:true, opacity:0.07 })
+        );
+        marker.rotation.x = -Math.PI/2;
+        marker.position.set(0, y-0.305, sz);
+        g.add(marker);
+        shelfSlots.push({ world:new THREE.Vector3(sx, y-0.28, sz), item:null, marker, shelfX:sx, level:y, z:sz });
+      });
+    });
+    g.position.x = sx;
+    scene.add(g);
+  });
+}
+
+function buildRack(){
+  // зона приёмки
+  const padMat = mat(0x101a2c, { roughness:0.8 });
+  const pad = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.08, 1.6), padMat);
+  pad.position.set(0, 0.04, 3.2); pad.receiveShadow = true; scene.add(pad);
+  const edge = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.02, 1.6),
+    new THREE.MeshBasicMaterial({ color:0x58a6ff, transparent:true, opacity:0.18 }));
+  edge.position.set(0, 0.09, 3.2); scene.add(edge);
+}
+
+// ── Коробки ────────────────────────────────────────────────────
+function makeBox(good){
+  const geo = new THREE.BoxGeometry(...good.size);
+  const mesh = new THREE.Mesh(geo, mat(good.color, { roughness:0.4, metalness:0.3 }));
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(geo),
+    new THREE.LineBasicMaterial({ color:0x9dc4ff, transparent:true, opacity:0.55 })
+  );
+  mesh.add(edges);
+  return mesh;
+}
+
+function newShipment(notify){
+  // убираем прежние свободные коробки
+  state.shipping.filter(o=>!o.placed).forEach(o=>{ if(o.mesh) scene.remove(o.mesh); });
+  state.shipping = [];
+  const n = 3 + Math.floor(Math.random()*3);
+  for(let i=0;i<n;i++){
+    const g = GOODS[Math.floor(Math.random()*GOODS.length)];
+    const mesh = makeBox(g);
+    const row = Math.floor(i/3), col = i%3;
+    mesh.position.set(-1.0 + col*1.0, g.size[1]/2 + 0.1, 3.2 + (row-0.5)*0.55);
+    mesh.userData = { good:g, zone:'shipping' };
+    scene.add(mesh);
+    draggable.push(mesh);
+    state.shipping.push({ good:g, mesh, placed:false });
+  }
+  if(notify) toast('📦 Пришла новая поставка');
+}
+
+function buildOrders(){
+  const cfg = LEVELS[state.level-1];
+  state.orders = [];
+  for(let i=0;i<cfg.goal;i++){
+    const g = GOODS[Math.floor(Math.random()*GOODS.length)];
+    state.orders.push({ uid:Math.random().toString(36).slice(2,8), good:g, done:false });
+  }
+  state.ordersDone = 0;
+}
+
+function renderOrders(){
+  const box = document.getElementById('orders');
+  box.innerHTML = state.orders.map(o=>`
+    <div class="order ${o.done?'done':''} ${hasOnShelf(o.good)?'ready':''}">
+      <span class="dot"></span><span>${o.good.n}</span>
+    </div>`).join('');
+  document.getElementById('totalCount').textContent = state.orders.length;
+}
+
+function hasOnShelf(good){
+  return shelfSlots.some(s => s.item && s.item.userData.good.id === good.id);
+}
+
+// ── Взаимодействие ─────────────────────────────────────────────
+function setPointer(e){
+  pointer.x = (e.clientX/innerWidth)*2 - 1;
+  pointer.y = -(e.clientY/innerHeight)*2 + 1;
+}
+
+function pickDraggable(){
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(draggable.filter(m=>m.parent), false);
+  return hits.length ? hits[0].object : null;
+}
+
+let dragging = false, dragStart = {x:0,y:0};
+
+function onPointerDown(e){
+  if(e.button !== 0) return;
+  dragStart = {x:e.clientX, y:e.clientY};
+  dragging = false;
+  setPointer(e);
+  const obj = pickDraggable();
+  if(!obj) return;
+
+  if(takenItem){
+    // поставить на полку
+    tryPlace(takenItem);
+    return;
+  }
+  // берём в руки
+  takenItem = obj;
+  obj.userData.held = true;
+  draggable.splice(draggable.indexOf(obj),1);
+  controls.enabled = false;
+  renderer.domElement.style.cursor = 'grabbing';
+  toast('Взял: ' + obj.userData.good.n);
+}
+
+function onPointerMove(e){
+  if(!takenItem) return;
+  setPointer(e);
+  raycaster.setFromCamera(pointer, camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0,1,0), -2.0);
+  const point = new THREE.Vector3();
+  if(raycaster.ray.intersectPlane(plane, point)){
+    takenItem.position.copy(point);
+    takenItem.position.y = takenItem.userData.good.size[1]/2 + 2.0;
+  }
+}
+
+function onPointerUp(){
+  if(takenItem){
+    tryPlace(takenItem);
+  }
+  controls.enabled = true;
+}
+
+function tryPlace(obj){
+  // ищем ближайший свободный слот
+  let best = null, bestD = 1.1;
+  shelfSlots.forEach(s=>{
+    if(s.item) return;
+    const d = s.world.distanceTo(obj.position);
+    if(d < bestD){ bestD = d; best = s; }
+  });
+  if(best){
+    best.item = obj;
+    obj.position.copy(best.world);
+    obj.position.y += obj.userData.good.size[1]/2;
+    obj.userData.zone = 'shelf';
+    obj.userData.placed = true;
+    const sh = state.shipping.find(x=>x.mesh===obj); if(sh) sh.placed = true;
+    takenItem = null;
+    renderer.domElement.style.cursor = 'grab';
+    checkOrders();
+    return;
+  }
+  // некуда — возвращаем на приёмку
+  const g = obj.userData.good;
+  const idx = state.shipping.filter(x=>!x.placed).length;
+  obj.position.set(-1.0 + (idx%3)*1.0, g.size[1]/2 + 0.1, 3.2 + (Math.floor(idx/3)-0.5)*0.55);
+  takenItem = null;
+  controls.enabled = true;
+  renderer.domElement.style.cursor = 'default';
+  draggable.push(obj);
+  toast('Нет свободной полки рядом');
+}
+
+function checkOrders(){
+  let changed = false;
+  state.orders.forEach((o, i)=>{
+    if(o.done) return;
+    const slot = shelfSlots.find(s => s.item && s.item.userData.good.id === o.good.id);
+    if(slot){
+      o.done = true; changed = true; state.ordersDone++;
+      state.score += 100 + Math.floor(o.good.p/1000);
+      // убираем коробку со сцены
+      scene.remove(slot.item);
+      draggable.splice(draggable.indexOf(slot.item),1);
+      slot.item = null;
+      toast('✅ Заказ собран: ' + o.good.n + '  +' + (100+Math.floor(o.good.p/1000)));
+    }
+  });
+  if(changed){ renderOrders(); updateHud(); checkLevel(); }
+}
+
+function checkLevel(){
+  const cfg = LEVELS[state.level-1];
+  if(state.ordersDone >= cfg.goal){
+    if(state.level < LEVELS.length){
+      state.level++;
+      buildOrders(); renderOrders(); updateHud();
+      toast('🎉 Уровень ' + state.level + '!');
+    } else {
+      toast('🏆 Все уровни пройдены! Ты — директор склада');
+    }
+  }
+}
+
+function updateHud(){
+  document.getElementById('lvlNum').textContent = state.level;
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('doneCount').textContent = state.ordersDone;
+  const cfg = LEVELS[Math.min(state.level, LEVELS.length)-1];
+  document.getElementById('lvlBar').style.width = Math.min(100, state.ordersDone/cfg.goal*100) + '%';
+}
+
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1700);
+}
+
+function onResize(){
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  if(takenItem){
+    takenItem.rotation.y = t * 0.8;
+    takenItem.position.y = takenItem.userData.good.size[1]/2 + 2.0 + Math.sin(t*3)*0.05;
+  }
+  // пульсация слотов
+  shelfSlots.forEach((s,i)=>{
+    if(!s.item){ s.marker.material.opacity = 0.05 + Math.sin(t*2 + i)*0.03; }
+    else s.marker.material.opacity = 0;
+  });
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// отпускание мыши (вне канваса тоже)
+addEventListener('pointerup', onPointerUp);
+</script>
+</body>
+</html>
