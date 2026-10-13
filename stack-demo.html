@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniqpost — пример: карточки-стопка</title>
+<style>
+  :root{
+    --bg:#070a11; --panel:#0e1320; --panel-2:#131a29; --line:rgba(60,130,255,.16);
+    --text:#e8ecf4; --muted:#7c8699; --neon:#2f7bff; --neon-2:#5b9cff; --neon-soft:rgba(47,123,255,.1);
+    --font:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:3rem 1.2rem 6rem}
+
+  .demo-title{text-align:center;font-size:.76rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:.6rem}
+  .demo-head{text-align:center;font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin-bottom:3rem}
+
+  /* ── СТОПКА КАРТОЧЕК ── */
+  .stack{position:relative}
+  .stack .card{
+    position:sticky; top:0;
+    min-height:78vh;
+    display:flex; align-items:center; gap:2rem;
+    border:1px solid var(--line); border-radius:22px;
+    background:linear-gradient(160deg, rgba(20,26,38,.98), rgba(10,14,21,.98));
+    box-shadow:0 -1px 0 rgba(255,255,255,.03) inset, 0 30px 70px -40px rgba(0,0,0,.95);
+    padding:2.4rem 2.6rem; margin-bottom:1.4rem;
+    overflow:hidden;
+  }
+  .stack .card:before{
+    content:""; position:absolute; inset:0 auto auto 0; width:100%; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(47,123,255,.6),transparent);
+  }
+  /* лёгкий «слой» сверху — чтобы верх карточки читался как шапка */
+  .stack .card .peek{position:absolute;top:0;left:0;right:0;height:74px;
+    background:linear-gradient(180deg, rgba(19,26,41,.95), rgba(19,26,41,0));
+    display:flex;align-items:center;padding:0 2.6rem;gap:.7rem;font-weight:700;font-size:1rem}
+
+  .stack .card .txt{flex:1;min-width:0;padding-top:1.4rem}
+  .stack .card h3{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.7rem}
+  .stack .card p{color:var(--muted);font-size:.95rem;line-height:1.6;max-width:44ch}
+  .stack .card .tag{display:inline-block;margin-top:1.1rem;font-size:.7rem;font-weight:600;color:var(--neon-2);
+    border:1px solid rgba(47,123,255,.4);background:var(--neon-soft);border-radius:100px;padding:.22rem .65rem}
+
+  .stack .card .art{flex:0 0 260px;height:220px;border-radius:18px;position:relative;overflow:hidden;
+    background:linear-gradient(160deg, rgba(47,123,255,.18), rgba(13,78,168,.05));
+    border:1px solid var(--line);display:grid;place-items:center;font-size:3.4rem}
+
+  .stack .card:nth-child(2){top:74px}
+  .stack .card:nth-child(3){top:148px}
+  .stack .card:nth-child(4){top:222px}
+
+  @media (max-width:760px){
+    .stack .card{flex-direction:column;min-height:auto;padding:1.6rem 1.3rem;gap:1rem;
+      position:sticky;top:0}
+    .stack .card .peek{padding:0 1.3rem;height:60px;font-size:.9rem}
+    .stack .card .art{flex:none;width:100%;height:150px;font-size:2.4rem}
+    .stack .card:nth-child(2){top:60px}
+    .stack .card:nth-child(3){top:120px}
+    .stack .card:nth-child(4){top:180px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="demo-title">Пример эффекта</div>
+  <div class="demo-head">Карточки наезжают друг на друга</div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="peek">🎬 Видео</div>
+      <div class="txt">
+        <h3>Видео</h3>
+        <p>Один ролик → 5 уникальных версий. Загружай одно видео снова и снова — без банов за дубли.</p>
+        <span class="tag">Меняем: метаданные, скорость, цвет, шум, звук</span>
+      </div>
+      <div class="art">🎬</div>
+    </div>
+
+    <div class="card">
+      <div class="peek">🖼️ Изображения</div>
+      <div class="txt">
+        <h3>Изображения</h3>
+        <p>Публикуй одно фото повторно — свежие версии получают охват заново.</p>
+        <span class="tag">Меняем: кроп, цвет, детали, метаданные</span>
+      </div>
+      <div class="art">🖼️</div>
+    </div>
+
+    <div class="card">
+      <div class="peek">📝 Текст</div>
+      <div class="txt">
+        <h3>Текст</h3>
+        <p>ИИ-помощник пишет посты в вашем стиле — на основе ваших прошлых публикаций.</p>
+        <span class="tag">Одобрить, поправить или сгенерировать заново</span>
+      </div>
+      <div class="art">📝</div>
+    </div>
+
+    <div class="card">
+      <div class="peek">🚀 Публикация</div>
+      <div class="txt">
+        <h3>Публикация</h3>
+        <p>Расписание и автопостинг во все площадки. Дальше — без вас.</p>
+        <span class="tag">7 площадок из одного кабинета</span>
+      </div>
+      <div class="art">🚀</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

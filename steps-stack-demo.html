@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Uniqpost — 5 шагов (стопка, пример)</title>
+<style>
+  :root{
+    --bg:#070a11; --line:rgba(60,130,255,.16);
+    --text:#e8ecf4; --muted:#7c8699; --neon:#2f7bff; --neon-2:#5b9cff; --neon-soft:rgba(47,123,255,.1);
+    --panel-2:#131a29; --panel:#0e1320;
+    --font:'Inter',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:3rem 1.2rem 8rem}
+
+  .ftitle{display:flex;align-items:center;gap:1rem;text-align:center;font-size:.74rem;text-transform:uppercase;
+    letter-spacing:.16em;color:var(--muted);margin-bottom:2rem}
+  .ftitle:before,.ftitle:after{content:"";flex:1;height:1px;background:var(--line)}
+  .ftitle b{color:var(--text)}
+
+  /* ── стопка шагов ── */
+  .stack{position:relative}
+  .step{
+    position:sticky; top:14px;
+    display:flex; align-items:center; gap:1.6rem;
+    min-height:92vh; margin-bottom:1.2rem;
+    border:1px solid var(--line); border-radius:22px;
+    background:linear-gradient(160deg, rgba(20,26,38,.98), rgba(10,14,21,.98));
+    box-shadow:0 -1px 0 rgba(255,255,255,.03) inset, 0 30px 70px -40px rgba(0,0,0,.95);
+    padding:2.2rem 2.4rem; overflow:hidden;
+  }
+  .step:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(47,123,255,.6),transparent)}
+  .step .peek{position:absolute;top:0;left:0;right:0;height:64px;
+    display:flex;align-items:center;gap:.7rem;padding:0 2.4rem;font-weight:700;font-size:1rem;
+    background:linear-gradient(180deg, rgba(19,26,41,.96), rgba(19,26,41,0))}
+
+  .step .big{flex:0 0 150px;display:grid;place-items:center;position:relative;padding-top:.6rem}
+  .step .big .emoji{font-size:3.4rem;animation:float 3.4s ease-in-out infinite;
+    filter:drop-shadow(0 6px 16px rgba(47,123,255,.85))}
+  .step .big .glow{position:absolute;width:130px;height:130px;border-radius:50%;
+    background:radial-gradient(circle at 50% 45%, rgba(47,123,255,.55), transparent 68%);
+    animation:gpulse 2.8s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes gpulse{0%,100%{transform:scale(.85);opacity:.5}50%{transform:scale(1.15);opacity:1}}
+
+  .nets{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;width:150px;
+    animation:float 4s ease-in-out infinite}
+  .nets .nt{aspect-ratio:1/1;display:grid;place-items:center}
+  .nets .nt svg{width:52px;height:52px;filter:drop-shadow(0 5px 14px rgba(0,0,0,.6))}
+  .nets .nt:nth-child(7){grid-column:1 / -1;justify-self:center}
+
+  .step .txt{flex:1;min-width:0;padding-top:1rem}
+  .step .num{font-size:.7rem;font-weight:700;color:var(--neon-2);letter-spacing:.1em}
+  .step h4{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:.35rem 0 .6rem}
+  .step p{color:var(--muted);font-size:.94rem;line-height:1.6;max-width:52ch}
+  .step .tags{margin-top:.7rem;display:flex;flex-wrap:wrap;gap:.35rem}
+  .step .tags span{font-size:.66rem;font-weight:600;color:var(--neon-2);
+    border:1px solid rgba(47,123,255,.4);background:var(--neon-soft);border-radius:100px;padding:.16rem .55rem}
+
+  @media (max-width:640px){
+    .step{flex-direction:column;justify-content:center;min-height:78vh;padding:1.5rem 1.2rem;gap:1rem}
+    .step .peek{height:56px;padding:0 1.2rem;font-size:.9rem}
+    .step .big{flex:none;padding-top:1.4rem}
+    .step .big .emoji{font-size:2.6rem}
+    .step h4{font-size:1.2rem}
+    .step p{font-size:.86rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ftitle">КАК ЭТО РАБОТАЕТ — <b>5 ШАГОВ (ПРИМЕР СТОПКИ) v5</b></div>
+
+  <div class="stack">
+    <div class="step">
+      <div class="peek">📎 1. Добавляем контент</div>
+      <div class="big"><span class="glow"></span><span class="emoji">📎</span></div>
+      <div class="txt">
+        <div class="num">ШАГ 1</div>
+        <h4>Добавляем контент</h4>
+        <p>Вставляете ссылку на видео или загружаете файл с устройства. Поддерживаем видео, фотографии и текстовые посты — всё в одном окне. Можно добавить сразу несколько материалов и поставить их в очередь обработки.</p>
+        <div class="tags"><span>🎬 Видео</span><span>🖼️ Фото</span><span>📝 Текст</span></div>
+      </div>
+    </div>
+
+    <div class="step" style="top:78px">
+      <div class="peek">🎬 2. Обрабатываем контент</div>
+      <div class="big"><span class="glow"></span><span class="emoji">🎬</span></div>
+      <div class="txt">
+        <div class="num">ШАГ 2</div>
+        <h4>Обрабатываем контент</h4>
+        <p>Видео уникализируем: меняем метаданные, микро-скорость, цвет, шум и звук. Из одного ролика получается до 5 версий, которые соцсети не считают дублями. Фото и текст готовим к публикации.</p>
+        <div class="tags"><span>Один ролик → 5 версий</span><span>Без банов за дубли</span></div>
+      </div>
+    </div>
+
+    <div class="step" style="top:142px">
+      <div class="peek">🌐 3. Выбираем соцсети</div>
+      <div class="big"><span class="glow"></span>
+        <div class="nets">
+          <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path d="M5.5 11.8l10.2-4.3c.5-.2.9.1.8.7l-1.7 8.1c-.1.6-.5.7-1 .4l-2.7-2-1.3 1.3c-.2.2-.3.3-.6.3l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1l-6.4 4-2.6-.8c-.6-.2-.6-.6.2-.8z" fill="#fff"/></svg></span>
+          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.4" fill="#E1306C"/></svg></span>
+          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1.5" y="4" width="21" height="16" rx="4.5" fill="#FF0000"/><path d="M10 8.8l5.5 3.2L10 15.2V8.8z" fill="#fff"/></svg></span>
+          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#0077FF"/><path d="M12.9 16.2c-4.1 0-6.6-2.9-6.7-7.6h2c.1 3.5 1.7 5 2.9 5.3V8.6h1.9v2.8c1.2-.1 2.4-1.4 2.8-2.8h1.9c-.3 1.7-1.5 3-2.4 3.5 1 .4 2.3 1.6 2.8 3.5h-2.1c-.4-1.3-1.5-2.3-2.8-2.4v2.4h-.3z" fill="#fff"/></svg></span>
+          <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#EE8208"/><circle cx="12" cy="10.2" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M8.4 15.2c1 .9 2.2 1.4 3.6 1.4s2.6-.5 3.6-1.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M15.5 12.6h-2.2V19h-2.7v-6.4H9v-2.3h1.6V8.9c0-1.7 1-2.9 2.8-2.9.8 0 1.5.1 1.7.1v2h-1.2c-.9 0-1.1.5-1.1 1.1v1.1h2.3l-.6 2.3z" fill="#fff"/></svg></span>
+          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#000"/><path d="M14.2 6.5c.3 1.7 1.5 2.9 3.2 3.1v2c-1.2.1-2.3-.2-3.3-.9v4.3c0 2.3-1.7 4-4 4-2 0-3.6-1.4-3.9-3.3-.3-2.2 1.4-4.2 3.7-4.2.3 0 .6 0 .9.1v2.1c-.3-.1-.6-.2-.9-.2-1.1 0-1.9.9-1.8 2 .1 1 .9 1.7 1.9 1.7 1.1 0 2-.9 2-2V6.5h2.2z" fill="#25F4EE"/></svg></span>
+        </div>
+      </div>
+      <div class="txt">
+        <div class="num">ШАГ 3</div>
+        <h4>Выбираем соцсети</h4>
+        <p>Отмечаете площадки одним кликом. Для каждой можно задать свои настройки и подписи. Один контент уходит сразу во все выбранные сети.</p>
+        <div class="tags"><span>Instagram</span><span>Facebook</span><span>VK</span><span>Telegram</span><span>YouTube</span><span>Одноклассники</span><span>TikTok</span></div>
+      </div>
+    </div>
+
+    <div class="step" style="top:206px">
+      <div class="peek">🕒 4. Настраиваем расписание</div>
+      <div class="big"><span class="glow"></span><span class="emoji">🕒</span></div>
+      <div class="txt">
+        <div class="num">ШАГ 4</div>
+        <h4>Настраиваем расписание</h4>
+        <p>Указываете дату и время — точное или интервалами. Можно задать свои часы для каждой площадки, распределить по дням недели и поставить в очередь. Система сама подберёт лучшее время.</p>
+        <div class="tags"><span>Своё время</span><span>По дням недели</span></div>
+      </div>
+    </div>
+
+    <div class="step" style="top:270px">
+      <div class="peek">🚀 5. Автопубликация</div>
+      <div class="big"><span class="glow"></span><span class="emoji">🚀</span></div>
+      <div class="txt">
+        <div class="num">ШАГ 5</div>
+        <h4>Автопубликация</h4>
+        <p>Дальше — без вас. В назначенный момент система публикует контент на все площадки, следит за результатом и ведёт статистику. Вы просто добавляете новый материал — остальное на автопилоте.</p>
+        <div class="tags"><span>7 площадок</span><span>Из одного кабинета</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

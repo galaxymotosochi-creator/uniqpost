@@ -73,7 +73,11 @@
   .empty p { font-size:.86rem; margin-top:.5rem; color:var(--text); font-weight:600; }
   .empty small { font-size:.76rem; display:block; margin-top:.3rem; }
 
-  .sched-row { display:flex; align-items:center; gap:.7rem; padding:.7rem .8rem; border-radius:12px; border:1px solid var(--line); margin-bottom:.55rem; background:rgba(255,255,255,.012); }
+  .sched-row { display:grid; grid-template-columns:1fr auto auto auto; align-items:center; gap:.7rem; padding:.7rem .8rem; border-radius:12px; border:1px solid var(--line); margin-bottom:.55rem; background:rgba(255,255,255,.012); }
+  .sched-row .acc { min-width:0; }
+  .sched-row .acc > div { min-width:0; }
+  .sched-row .badge { justify-self:center; width:110px; text-align:center; }
+  .sched-row .btn-ghost { width:78px; text-align:center; flex:none; }
   .acc { display:flex; align-items:center; gap:.45rem; font-size:.82rem; }
   .acc .ic { width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-size:.8rem; background:var(--neon-soft); border:1px solid var(--line); }
   .time { margin-left:auto; font-variant-numeric:tabular-nums; font-size:.82rem; color:var(--neon-2); font-weight:600; }
@@ -86,7 +90,7 @@
   .thumb img { width:74px !important; height:96px !important; object-fit:cover; display:block; border-radius:9px; }
   .qmeta { flex:1; min-width:0; }
   .qmeta .t { font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .qmeta .s { font-size:.74rem; color:var(--muted); margin-top:.15rem; }
+  .qmeta .s { font-size:.74rem; color:var(--muted); margin-top:.3rem; }
   .pill { font-size:.68rem; padding:.22rem .6rem; border-radius:100px; font-weight:600; align-self:center; white-space:nowrap; }
   .pill.wait { color:var(--neon-2); border:1px solid rgba(47,123,255,.35); background:var(--neon-soft); }
 
@@ -97,13 +101,18 @@
     .wrap{padding:1.4rem 1rem 3rem} .stats{grid-template-columns:1fr;gap:.7rem} .grid{gap:.9rem}
     .card{padding:1.05rem 1rem} .head h1{font-size:1.35rem} .nav{padding:.85rem 1rem;gap:.8rem}
     .user-chip span.uname{display:none}
+    /* Расписание: на телефоне — в две строки, чтобы плашка и кнопки не разъезжались */
+    .sched-row{grid-template-columns:1fr auto;gap:.5rem .6rem;padding:.7rem}
+    .sched-row .acc{grid-column:1 / -1}
+    .sched-row .badge{justify-self:start;width:auto}
+    .sched-row .btn-ghost{width:auto;min-width:78px}
   }
 </style>
 </head>
 <body>
 
 <nav class="nav">
-  <div class="brand"><span class="dot"></span> uniqpost</div>
+  <div class="brand"><span class="dot"></span> Uniqpost</div>
   <div class="nav-links">
     <span class="active">Обзор</span>
     <span>Видео</span>
@@ -182,26 +191,27 @@
           <small>Подключите Instagram, Facebook, VK или Telegram</small>
         </div>
       </div>
-      <button class="btn btn-neon" style="margin-top:1rem;width:100%" onclick="openConnect()">+ Подключить аккаунт</button>
+      <div style="text-align:center"><button class="btn btn-neon" style="margin-top:1rem;width:auto" onclick="openConnect()">+ Подключить аккаунт</button></div>
     </div>
 
     <div class="card">
-      <h2><span class="tick"></span> Расписание</h2>
+      <h2><span class="tick"></span> Расписание публикаций</h2>
       <div id="schedList">
         <div class="empty">
           <div class="ic">📅</div>
           <p>Расписание пустое</p>
-          <small>Добавьте аккаунт, чтобы настроить время публикаций</small>
+          <small>Запланируйте публикацию видео в подключённый канал</small>
         </div>
       </div>
+      <div style="text-align:center"><button class="btn btn-neon" style="margin-top:1rem;width:auto" onclick="openPlan()">📅 Запланировать публикацию</button></div>
     </div>
   </div>
 
-  <footer>uniqpost — личный кабинет</footer>
+  <footer>Uniqpost — личный кабинет</footer>
 </div>
 
 <script>
-  const API = 'https://nl-openclaw.tailb52267.ts.net:8443/api';
+  const API = '/api';
   const token = () => localStorage.getItem('uniqpost_token') || '';
   const authH = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() });
 
@@ -234,15 +244,19 @@
     } catch (e) { return false; }
   }
 
-  // Охрана + автовход
-  (async () => {
-    if (token()) { setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name')); return; }
-    const ok = await tgAutoLogin();
-    if (!ok) { location.replace('login.html'); }
-  })();
-
-  // Имя в шапке
+    // Имя в шапке
   setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name'));
+
+  // Охрана + автовход. Данные грузим ПОСЛЕ объявления всех функций (ниже, в конце скрипта).
+  let _authReady = null;
+  _authReady = (async () => {
+    if (!token()) {
+      const ok = await tgAutoLogin();
+      if (!ok) { location.replace('login.html'); return false; }
+    }
+    setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name'));
+    return true;
+  })();
 
   const workStatus = document.getElementById('workStatus');
   const setStatus = t => { workStatus.textContent = t || ''; };
@@ -258,9 +272,13 @@
     const row = document.createElement('div');
     row.className = 'qitem';
     row.dataset.id = v.id;
-    row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t"></div><div class="s"></div></div><span class="pill wait"></span>';
-    row.querySelector('.t').textContent = v.file;
-    row.querySelector('.s').textContent = v.label + (v.size ? ' · ' + (v.size/1024/1024).toFixed(1) + ' МБ' : '');
+    row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t" title="Нажмите, чтобы изменить название"></div><div class="s"></div></div><span class="pill wait"></span>';
+    const titleEl = row.querySelector('.t');
+    const displayName = v.name || v.file;
+    titleEl.textContent = displayName;
+    titleEl.style.cursor = 'pointer';
+    titleEl.onclick = () => startRename(v, titleEl);
+    row.querySelector('.s').textContent = v.label + (v.size ? ' | ' + (v.size/1024/1024).toFixed(1) + ' МБ' : '');
     // кадр видео вместо серого прямоугольника (через fetch с токеном → blob)
     if (v.thumb) {
       const th = row.querySelector('.thumb');
@@ -277,14 +295,14 @@
     row.querySelector('.pill').textContent = 'Готово';
 
     const box = document.createElement('div');
-    box.style.cssText = 'display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap';
+    box.style.cssText = 'display:flex;gap:.7rem;margin-top:.7rem;flex-wrap:wrap;align-items:center';
     let html = '';
     if (v.type === 'original') {
-      html += '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">🎨 Уникализировать</button>';
+      html += '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">Уникализировать</button>';
     }
     html += '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);text-decoration:none" ' +
             'href="' + API + '/file/' + encodeURIComponent(v.file) + '">⬇ Скачать</a>' +
-            '<button class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);color:#ff6b6b">✕ Удалить</button>';
+            '<button class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);color:#ff6b6b;flex:none;width:78px;text-align:center">✕</button>';
     box.innerHTML = html;
     const uqBtn = box.querySelector('.btn-neon');
     if (uqBtn) uqBtn.onclick = () => doUniquify(v.file);
@@ -398,9 +416,7 @@
   // Telegram: развернуть на весь экран
   try { if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } } catch (e) {}
 
-  // Старт: подтянуть список с сервера
-  loadVideos();
-  loadAccounts();
+  // (запуск данных перенесён в самый конец скрипта)
 </script>
 
 <!-- ── Окно подключения аккаунта ── -->
@@ -421,7 +437,7 @@
     { id:'telegram', name:'Telegram', color:'#2AABEE', ready:true, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path d="M5.5 11.8l10.2-4.3c.5-.2.9.1.8.7l-1.7 8.1c-.1.6-.5.7-1 .4l-2.7-2-1.3 1.3c-.2.2-.3.3-.6.3l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1l-6.4 4-2.6-.8c-.6-.2-.6-.6.2-.8z" fill="#fff"/></svg>' },
     { id:'instagram', name:'Instagram', color:'#E1306C', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.4" fill="#E1306C"/></svg>' },
     { id:'facebook', name:'Facebook', color:'#1877F2', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M15.5 12.6h-2.2V19h-2.7v-6.4H9v-2.3h1.6V8.9c0-1.7 1-2.9 2.8-2.9.8 0 1.5.1 1.7.1v2h-1.2c-.9 0-1.1.5-1.1 1.1v1.1h2.3l-.6 2.3z" fill="#fff"/></svg>' },
-    { id:'vk', name:'VK', color:'#0077FF', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#0077FF"/><path d="M12.9 16.2c-4.1 0-6.6-2.9-6.7-7.6h2c.1 3.5 1.7 5 2.9 5.3V8.6h1.9v2.8c1.2-.1 2.4-1.4 2.8-2.8h1.9c-.3 1.7-1.5 3-2.4 3.5 1 .4 2.3 1.6 2.8 3.5h-2.1c-.4-1.3-1.5-2.3-2.8-2.4v2.4h-.3z" fill="#fff"/></svg>' },
+    { id:'vk', name:'VK', color:'#0077FF', ready:true, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#0077FF"/><path d="M12.9 16.2c-4.1 0-6.6-2.9-6.7-7.6h2c.1 3.5 1.7 5 2.9 5.3V8.6h1.9v2.8c1.2-.1 2.4-1.4 2.8-2.8h1.9c-.3 1.7-1.5 3-2.4 3.5 1 .4 2.3 1.6 2.8 3.5h-2.1c-.4-1.3-1.5-2.3-2.8-2.4v2.4h-.3z" fill="#fff"/></svg>' },
     { id:'youtube', name:'YouTube', color:'#FF0000', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1.5" y="4" width="21" height="16" rx="4.5" fill="#FF0000"/><path d="M10 8.8l5.5 3.2L10 15.2V8.8z" fill="#fff"/></svg>' },
   ];
 
@@ -443,15 +459,39 @@
   function closeConnect() { document.getElementById('connectModal').style.display = 'none'; }
 
   async function connectService(id) {
+    if (id === 'vk') {
+      const st = document.getElementById('connectStatus');
+      st.textContent = 'Открываю VK…';
+      try {
+        const r = await fetch(API + '/vk/auth-url', { headers: authH() });
+        const d = await r.json();
+        if (r.ok && d.url) { window.location.href = d.url; }
+        else { st.textContent = d.error || 'VK не настроен'; }
+      } catch (e) { st.textContent = 'Нет связи с сервером'; }
+      return;
+    }
     if (id === 'telegram') {
       const st = document.getElementById('connectStatus');
       // свой ввод вместо браузерного prompt()
       document.getElementById('svcList').innerHTML = `
+        <div style="background:rgba(47,123,255,.07);border:1px solid var(--line);border-radius:14px;padding:.85rem .9rem;margin-bottom:1rem">
+          <div style="font-size:.84rem;font-weight:700;margin-bottom:.55rem">Как подключить канал</div>
+          <ol style="margin:0;padding-left:1.15rem;font-size:.8rem;color:var(--muted);line-height:1.75">
+            <li>Создайте канал в Telegram (или возьмите готовый).</li>
+            <li>Откройте канал → «Управление» → «Администраторы» → «Добавить администратора».</li>
+            <li>Найдите и добавьте бота <b style="color:var(--text)">@reunique_bot</b> (дайте право «Публиковать сообщения»).</li>
+            <li>Введите @username канала ниже (например <b style="color:var(--text)">@my_channel</b>) и нажмите «Подключить».</li>
+          </ol>
+          <div style="margin-top:.6rem;font-size:.76rem;color:var(--muted)">
+            Бот публикует видео в канал — без прав администратора подключение не сработает.
+            <a href="https://t.me/reunique_bot" target="_blank" rel="noopener" style="color:var(--neon-2)">Открыть бота →</a>
+          </div>
+        </div>
         <div style="margin-bottom:.7rem;font-size:.84rem;color:var(--muted)">Укажите канал Telegram</div>
         <input id="tgInput" type="text" placeholder="@канал или https://t.me/…"
           style="width:100%;padding:.72rem .85rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none">
         <div style="display:flex;gap:.5rem;margin-top:.8rem">
-          <button class="btn btn-neon" style="flex:1" onclick="submitTelegram()">Подключить</button>
+          <button class="btn btn-neon" style="width:auto;padding:.55rem 1.4rem" onclick="submitTelegram()">Подключить</button>
         </div>`;
       st.textContent = '';
       setTimeout(() => { const i = document.getElementById('tgInput'); if (i) { i.focus(); i.addEventListener('keydown', e => { if (e.key === 'Enter') submitTelegram(); }); } }, 50);
@@ -480,6 +520,7 @@
   }
 
   async function loadAccounts() {
+    if (!token()) return;
     try {
       const r = await fetch(API + '/accounts', { headers: authH() });
       const data = await r.json();
@@ -489,6 +530,7 @@
         list.innerHTML = '<div class="empty"><div class="ic">🔗</div><p>Аккаунты не подключены</p><small>Подключите Instagram, Facebook, VK или Telegram</small></div>';
         return;
       }
+      window.__accs = data.accounts;
       list.innerHTML = data.accounts.map(a => {
         const svc = SERVICES.find(s => s.id === a.service) || { name:a.service, icon:'' };
         return `<div class="sched-row"><div class="acc"><span class="ic">${svc.icon || ''}</span> ${a.username}</div>` +
@@ -496,7 +538,194 @@
       }).join('');
     } catch (e) {}
   }
+
+  // ── Редактирование названия видео (клик по имени) ──────────────────────
+  function startRename(v, el) {
+    if (el.dataset.editing) return;
+    el.dataset.editing = '1';
+    const old = v.name || v.file;
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.value = old;
+    inp.style.cssText = 'width:100%;background:rgba(255,255,255,.05);border:1px solid var(--neon);border-radius:8px;color:var(--text);font-family:var(--font);font-size:inherit;font-weight:inherit;padding:.15rem .4rem;outline:none';
+    el.textContent = '';
+    el.appendChild(inp);
+    inp.focus(); inp.select();
+    let finished = false;
+    const finish = async (save) => {
+      if (finished) return; finished = true;
+      const val = inp.value.trim();
+      delete el.dataset.editing;
+      if (save && val && val !== old) {
+        el.textContent = val;
+        try {
+          const r = await fetch(API + '/videos/rename', { method:'POST', headers: authH(),
+            body: JSON.stringify({ id: v.id, name: val }) });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'Ошибка');
+          v.name = val;
+        } catch (e) { el.textContent = old; alert('Не удалось сохранить: ' + e.message); }
+      } else {
+        el.textContent = old;
+      }
+    };
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    });
+    inp.addEventListener('blur', () => finish(true));
+    inp.addEventListener('click', e => e.stopPropagation());
+  }
+
+  // ── Расписание публикаций ──────────────────────────────────────────────
+  const SCHED_STATUS = {
+    queued:     { t:'В очереди',  c:'#ffcc4d' },
+    publishing: { t:'Публикуется',c:'#58a6ff' },
+    done:       { t:'Опубликовано',c:'#3ddc84' },
+    error:      { t:'Ошибка',     c:'#ff6b6b' },
+  };
+
+  async function openPlan() {
+    const vSel = document.getElementById('planVideo');
+    const aSel = document.getElementById('planAccount');
+    document.getElementById('planStatus').textContent = '';
+    // грузим видео и каналы
+    try {
+      const rv = await fetch(API + '/videos', { headers: authH() });
+      const dv = await rv.json();
+      vSel.innerHTML = (dv.videos || []).map(v => `<option value="${v.file}">${v.name || v.file}</option>`).join('') || '<option value="">— нет видео —</option>';
+    } catch (e) { vSel.innerHTML = '<option value="">ошибка загрузки</option>'; }
+    try {
+      const ra = await fetch(API + '/accounts', { headers: authH() });
+      const da = await ra.json();
+      aSel.innerHTML = (da.accounts || []).map(a => `<option value="${a.id}">${a.username} (${a.title || a.service})</option>`).join('') || '<option value="">— нет каналов —</option>';
+    } catch (e) { aSel.innerHTML = '<option value="">ошибка загрузки</option>'; }
+    // дефолт времени: сейчас + 5 минут
+    const d = new Date(Date.now() + 5*60000);
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('planWhen').value = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+    document.getElementById('planModal').style.display = 'flex';
+  }
+  function closePlan() { document.getElementById('planModal').style.display = 'none'; }
+
+  async function submitPlan() {
+    const st = document.getElementById('planStatus');
+    const file = document.getElementById('planVideo').value;
+    const accountId = document.getElementById('planAccount').value;
+    const when = document.getElementById('planWhen').value;
+    const caption = document.getElementById('planCaption').value;
+    if (!file) { st.textContent = 'Нет видео для публикации'; return; }
+    if (!accountId) { st.textContent = 'Подключите канал'; return; }
+    if (!when) { st.textContent = 'Укажите время'; return; }
+    st.textContent = 'Сохраняю…';
+    try {
+      const r = await fetch(API + '/schedule', { method:'POST', headers: authH(),
+        body: JSON.stringify({ file, accountId, when: new Date(when).toISOString(), caption }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Ошибка');
+      st.textContent = 'Запланировано ✅';
+      closePlan();
+      loadSchedule();
+    } catch (e) { st.textContent = e.message; }
+  }
+
+  async function loadSchedule() {
+    if (!token()) return;
+    const list = document.getElementById('schedList');
+    const queue = document.getElementById('queueList');
+    try {
+      const r = await fetch(API + '/schedule', { headers: authH() });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Ошибка');
+      const items = d.items || [];
+      if (!items.length) {
+        list.innerHTML = '<div class="empty"><div class="ic">📅</div><p>Расписание пустое</p><small>Запланируйте публикацию видео в подключённый канал</small></div>';
+        if (queue) queue.innerHTML = '<div class="empty"><div class="ic">🕓</div><p>Очередь пуста</p><small>Запланированные публикации появятся здесь</small></div>';
+        return;
+      }
+      list.innerHTML = items.map(it => {
+        const s = SCHED_STATUS[it.status] || SCHED_STATUS.queued;
+        const dt = new Date(it.when);
+        const pad = n => String(n).padStart(2,'0');
+        const when = pad(dt.getDate())+'.'+pad(dt.getMonth()+1)+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());
+        const acc = (window.__accs||[]).find(a => a.id === it.accountId);
+        const accName = acc ? acc.username : 'канал';
+        return `<div class="sched-row" data-id="${it.id}">
+          <div class="acc"><span class="ic">🎬</span> <div><div style="font-weight:600;font-size:.8rem">${(it.videoName || it.file)}</div><div style="color:var(--muted);font-size:.7rem;margin-top:.3rem">${accName} | ${when}</div></div></div>
+          <span class="badge" style="color:${s.c};border-color:${s.c}33">${s.t}</span>
+          <button class="btn btn-ghost" style="font-size:.68rem;padding:.3rem .6rem;border:1px solid var(--line);flex:none;width:78px;text-align:center" onclick="publishNow('${it.id}')">▶ Сейчас</button>
+          <button class="btn btn-ghost" style="font-size:.68rem;padding:.3rem .6rem;border:1px solid var(--line);color:#ff6b6b;flex:none;width:78px;text-align:center" onclick="delSched('${it.id}')">✕</button>
+        </div>`;
+      }).join('');
+      // Очередь = ближайшая запланированная (queued), упорядоченная по времени
+      if (queue) {
+        const pending = items.filter(it => it.status === 'queued').sort((a,b) => a.when - b.when);
+        if (!pending.length) {
+          queue.innerHTML = '<div class="empty"><div class="ic">🕓</div><p>Очередь пуста</p><small>Все публикации выполнены</small></div>';
+        } else {
+          queue.innerHTML = pending.map(it => {
+            const dt = new Date(it.when);
+            const pad = n => String(n).padStart(2,'0');
+            const when = pad(dt.getDate())+'.'+pad(dt.getMonth()+1)+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());
+            return `<div class="sched-row">
+              <div class="acc"><span class="ic">🕓</span> <div><div style="font-weight:600;font-size:.8rem">${(it.videoName || it.file)}</div><div style="color:var(--muted);font-size:.7rem">выйдет в ${when}</div></div></div>
+              <span class="badge" style="color:#ffcc4d;border-color:#ffcc4d33">В очереди</span>
+              <div></div><div></div>
+            </div>`;
+          }).join('');
+        }
+      }
+    } catch (e) {
+      list.innerHTML = '<div class="empty"><div class="ic">📅</div><p>Не удалось загрузить</p><small>'+(e.message||'')+'</small></div>';
+    }
+  }
+
+  async function publishNow(id) {
+    try {
+      const r = await fetch(API + '/schedule/publish', { method:'POST', headers: authH(), body: JSON.stringify({ id }) });
+      const d = await r.json();
+      if (!r.ok || !d.ok) throw new Error(d.error || 'Ошибка публикации');
+      loadSchedule();
+    } catch (e) { alert('Ошибка: ' + e.message); }
+  }
+  async function delSched(id) {
+    try {
+      await fetch(API + '/schedule/delete', { method:'POST', headers: authH(), body: JSON.stringify({ id }) });
+      loadSchedule();
+    } catch (e) {}
+  }
+
+  // ── ЗАПУСК ДАННЫХ (в самом конце — когда все функции объявлены) ──
+  (async () => {
+    let ok = false;
+    try { ok = await _authReady; } catch (e) { ok = !!token(); }
+    if (!ok) return;
+    loadVideos();
+    loadAccounts();
+    loadSchedule();
+  })();
 </script>
+
+
+<!-- ── Окно планирования публикации ── -->
+<div id="planModal" style="display:none;position:fixed;inset:0;background:rgba(3,4,8,.72);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="width:100%;max-width:440px;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:1.5rem 1.3rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
+      <div style="font-size:1.02rem;font-weight:700">Запланировать публикацию</div>
+      <button onclick="closePlan()" style="background:transparent;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:var(--font)">✕</button>
+    </div>
+    <div style="margin-bottom:.7rem;font-size:.8rem;color:var(--muted)">Видео</div>
+    <select id="planVideo" style="width:100%;padding:.7rem .8rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.86rem;outline:none;margin-bottom:.9rem"></select>
+    <div style="margin-bottom:.7rem;font-size:.8rem;color:var(--muted)">Канал</div>
+    <select id="planAccount" style="width:100%;padding:.7rem .8rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.86rem;outline:none;margin-bottom:.9rem"></select>
+    <div style="margin-bottom:.7rem;font-size:.8rem;color:var(--muted)">Дата и время публикации</div>
+    <input id="planWhen" type="datetime-local" style="width:100%;padding:.7rem .8rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.86rem;outline:none;margin-bottom:.9rem">
+    <div style="margin-bottom:.7rem;font-size:.8rem;color:var(--muted)">Подпись (необязательно)</div>
+    <input id="planCaption" type="text" placeholder="Текст к посту" style="width:100%;padding:.7rem .8rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.86rem;outline:none;margin-bottom:.9rem">
+    <div id="planStatus" style="text-align:center;font-size:.8rem;color:var(--neon-2);min-height:1.2rem;margin-bottom:.4rem"></div>
+    <button class="btn btn-neon" style="width:100%" onclick="submitPlan()">📅 Запланировать</button>
+  </div>
+</div>
 
 </body>
 </html>

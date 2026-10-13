@@ -48,7 +48,7 @@
   .btn:disabled { opacity:.6; cursor:wait; transform:none; }
   .msg { text-align:center; font-size:.82rem; margin-top:.9rem; min-height:1.1rem; }
   .msg.err { color:#ff6b6b; }
-  .msg.ok { color:#5bd67a; }
+  .msg.ok { color:var(--text); }
   .back { text-align:center; margin-top:1.2rem; }
   .back a { color:var(--muted); font-size:.78rem; text-decoration:none; }
   .back a:hover { color:var(--neon-2); }
@@ -56,7 +56,7 @@
 </head>
 <body>
   <form class="auth" id="form">
-    <div class="brand"><span class="dot"></span> uniqpost</div>
+    <div class="brand"><span class="dot"></span> Uniqpost</div>
     <div class="sub">Вход в личный кабинет</div>
 
     <div class="field">
@@ -68,14 +68,45 @@
       <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required>
     </div>
 
-    <button class="btn" type="submit" id="submitBtn">Войти</button>
+    <button class="btn" type="submit" id="submitBtn" style="width:auto;padding:.8rem 1.6rem;display:block;margin:.5rem auto 0">Войти</button>
     <div class="msg" id="msg"></div>
+    <div class="back"><span style="color:var(--text);font-size:.78rem">Нет аккаунта?</span> <a href="#" id="toReg">Зарегистрироваться</a></div>
     <div class="back"><a href="index.html">← На главную</a></div>
+  </form>
+
+  <form class="auth" id="regForm" style="display:none">
+    <div class="brand"><span class="dot"></span> Uniqpost</div>
+    <div class="sub">Регистрация</div>
+
+    <div class="field">
+      <label>Имя</label>
+      <input type="text" id="rName" placeholder="Как к вам обращаться" autocomplete="name" required>
+    </div>
+    <div class="field">
+      <label>Почта</label>
+      <input type="email" id="rEmail" placeholder="you@mail.ru" autocomplete="email" required>
+    </div>
+    <div class="field">
+      <label>Пароль</label>
+      <input type="password" id="rPass" placeholder="минимум 8 символов" autocomplete="new-password" required>
+    </div>
+    <div class="field">
+      <label>Повторите пароль</label>
+      <input type="password" id="rPass2" placeholder="••••••••" autocomplete="new-password" required>
+    </div>
+    <label style="display:flex;gap:.5rem;align-items:flex-start;font-size:.78rem;color:var(--muted);margin:.2rem 0 .6rem;cursor:pointer">
+      <input type="checkbox" id="rAgree" style="margin-top:.15rem">
+      <span>Согласен с обработкой персональных данных и условиями сервиса</span>
+    </label>
+
+    <button class="btn" type="submit" id="regBtn" style="width:auto;padding:.8rem 1.6rem;display:block;margin:.5rem auto 0">Зарегистрироваться</button>
+    <div class="msg" id="regMsg"></div>
+    <div class="back"><span style="color:var(--text);font-size:.78rem">Уже есть аккаунт?</span> <a href="#" id="toLogin">Войти</a></div>
   </form>
 
 <script>
   // Адрес API (публичный HTTPS через Tailscale Funnel)
-  const API_URL = 'https://nl-openclaw.tailb52267.ts.net:8443/api';
+  const API_URL = '/api';
   const DEMO = false;
   const DEMO_EMAIL = 'yulia9500@mail.ru';
   const DEMO_PASS = 'Test123!!!';
@@ -95,7 +126,7 @@
     if (DEMO) {
       setTimeout(() => {
         if (email.toLowerCase() === DEMO_EMAIL && password === DEMO_PASS) {
-          msg.className = 'msg ok'; msg.textContent = 'Вход выполнен. Открываю кабинет…';
+          msg.className = 'msg'; msg.style.color = 'var(--text)'; msg.textContent = 'Вход выполнен. Открываю кабинет…';
           localStorage.setItem('uniqpost_demo_auth', '1');
           setTimeout(() => { location.href = 'dashboard.html'; }, 700);
         } else {
@@ -117,7 +148,7 @@
       if (r.ok && data.ok) {
         localStorage.setItem('uniqpost_token', data.token);
         localStorage.setItem('uniqpost_email', email);
-        msg.className = 'msg ok'; msg.textContent = 'Вход выполнен. Открываю кабинет…';
+        msg.className = 'msg'; msg.style.color = 'var(--text)'; msg.textContent = 'Вход выполнен. Открываю кабинет…';
         setTimeout(() => { location.href = 'dashboard.html'; }, 600);
       } else {
         msg.className = 'msg err'; msg.textContent = data.error || 'Ошибка входа';
@@ -126,6 +157,43 @@
     } catch (err) {
       msg.className = 'msg err'; msg.textContent = 'Нет связи с сервером';
       btn.disabled = false;
+    }
+  });
+
+  // ── Переключение вход ↔ регистрация ──
+  const regForm = document.getElementById('regForm');
+  document.getElementById('toReg').onclick = (e) => { e.preventDefault(); form.style.display='none'; regForm.style.display='block'; document.getElementById('regMsg').textContent=''; };
+  document.getElementById('toLogin').onclick = (e) => { e.preventDefault(); regForm.style.display='none'; form.style.display='block'; msg.textContent=''; };
+
+  regForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const rmsg = document.getElementById('regMsg');
+    const rbtn = document.getElementById('regBtn');
+    rmsg.className='msg'; rmsg.textContent='';
+    const name = document.getElementById('rName').value.trim();
+    const email = document.getElementById('rEmail').value.trim();
+    const p1 = document.getElementById('rPass').value;
+    const p2 = document.getElementById('rPass2').value;
+    const agree = document.getElementById('rAgree').checked;
+    if (!name) { rmsg.className='msg err'; rmsg.textContent='Укажите имя'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { rmsg.className='msg err'; rmsg.textContent='Некорректная почта'; return; }
+    if (p1.length < 8) { rmsg.className='msg err'; rmsg.textContent='Пароль минимум 8 символов'; return; }
+    if (p1 !== p2) { rmsg.className='msg err'; rmsg.textContent='Пароли не совпадают'; return; }
+    if (!agree) { rmsg.className='msg err'; rmsg.textContent='Нужно согласие с обработкой данных'; return; }
+    rbtn.disabled = true;
+    try {
+      const r = await fetch(API_URL + '/register', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email, password: p1, name }) });
+      const d = await r.json();
+      if (r.ok && d.ok) {
+        rmsg.className='msg'; rmsg.style.color='var(--text)';
+        rmsg.textContent = d.sent ? 'Готово! Проверьте почту и подтвердите регистрацию.' : 'Аккаунт создан, но письмо не отправилось. Обратитесь в поддержку.';
+      } else {
+        rmsg.className='msg err'; rmsg.textContent = d.error || 'Ошибка регистрации';
+        rbtn.disabled = false;
+      }
+    } catch (err) {
+      rmsg.className='msg err'; rmsg.textContent='Нет связи с сервером'; rbtn.disabled = false;
     }
   });
 </script>

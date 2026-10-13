@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uniqpost — Кредиты</title>
+<style>
+  :root {
+    --bg:#07080c; --panel:#0c0f16; --panel-2:#10141d;
+    --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);
+  }
+  .wrap { max-width:1040px; margin:0 auto; padding:2.4rem 1.2rem 4rem; }
+
+  /* шапка */
+  .nav { display:flex; align-items:center; gap:.6rem; margin-bottom:2.4rem; }
+  .brand { display:flex; align-items:center; gap:.55rem; font-weight:800; font-size:1.05rem; letter-spacing:-.02em; }
+  .brand .dot { width:11px; height:11px; border-radius:50%; background:var(--neon);
+    box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6); animation:pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.65;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
+  .back { margin-left:auto; color:var(--muted); font-size:.84rem; text-decoration:none;
+    border:1px solid var(--line); border-radius:100px; padding:.4rem .95rem; transition:.2s; }
+  .back:hover { color:var(--text); border-color:var(--neon); }
+
+  /* баланс */
+  .balance { background:linear-gradient(160deg, rgba(20,26,38,.95), rgba(11,15,22,.95));
+    border:1px solid var(--line); border-radius:20px; padding:1.6rem 1.8rem; margin-bottom:2rem;
+    display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap; }
+  .balance .bico { font-size:2rem; }
+  .balance .bnum { font-size:2.1rem; font-weight:800; letter-spacing:-.02em; }
+  .balance .bnum em { font-style:normal; color:var(--neon-2); }
+  .balance .blbl { color:var(--muted); font-size:.8rem; margin-top:.15rem; }
+  .balance .bnote { margin-left:auto; color:var(--muted); font-size:.8rem; text-align:right; }
+  .balance .bnote b { color:var(--text); }
+
+  /* заголовок раздела */
+  .sec { display:flex; align-items:center; gap:1rem; text-transform:uppercase;
+    font-size:.74rem; letter-spacing:.16em; color:var(--muted); margin:0 0 1.4rem; }
+  .sec:before,.sec:after { content:""; flex:1; height:1px; background:var(--line); }
+  .sec b { color:var(--text); }
+
+  /* пакеты — вертикальные плашки */
+  .packs { display:grid; grid-template-columns:repeat(5,1fr); gap:.9rem; align-items:stretch; }
+  .pack { display:flex; flex-direction:column; position:relative;
+    background:linear-gradient(180deg, rgba(20,26,38,.96), rgba(11,15,22,.96));
+    border:1px solid var(--line); border-radius:18px; padding:1.5rem 1.1rem 1.2rem;
+    min-height:360px; text-align:left;
+    transition:transform .25s, border-color .25s, box-shadow .25s; }
+  .pack:hover { transform:translateY(-4px); border-color:rgba(47,123,255,.5);
+    box-shadow:0 26px 50px -30px rgba(47,123,255,.7); }
+  .pack.best { border-color:rgba(47,123,255,.55);
+    box-shadow:0 28px 60px -34px rgba(47,123,255,.8), 0 0 0 1px rgba(47,123,255,.12) inset; }
+  .pack .tag { position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+    font-size:.6rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:#fff; background:linear-gradient(135deg,#2f7bff,#1b5fd6); border-radius:100px;
+    padding:.2rem .7rem; box-shadow:0 8px 20px -8px rgba(47,123,255,.9); white-space:nowrap; }
+  .pack .pname { font-size:.92rem; font-weight:700; margin-bottom:.2rem; }
+  .pack .cnt { font-size:1.9rem; font-weight:800; letter-spacing:-.03em; line-height:1.05; }
+  .pack .cnt small { display:block; font-size:.66rem; font-weight:600; color:var(--muted);
+    letter-spacing:.06em; text-transform:uppercase; margin-top:.15rem; }
+  .pack .price { font-size:1.35rem; font-weight:800; margin:.8rem 0 .15rem; }
+  .pack.free .price { color:var(--neon-2); }
+  .pack .per { color:var(--muted); font-size:.7rem; }
+  .pack .feats { border-top:1px solid var(--line); padding-top:.85rem; margin:.95rem 0 1rem; flex:1; }
+  .pack .feats div { display:flex; align-items:flex-start; gap:.45rem; padding:.16rem 0;
+    font-size:.75rem; color:var(--muted); line-height:1.45; }
+  .pack .feats div b { color:var(--text); font-weight:600; }
+  .pack .feats .chk { color:var(--neon-2); font-weight:700; flex:none; }
+  .pack .btn { display:block; width:100%; margin-top:auto; padding:.62rem 1rem; border-radius:100px;
+    border:none; cursor:pointer; font-family:inherit; font-weight:700; font-size:.8rem;
+    background:linear-gradient(135deg,#2f7bff,#1b5fd6); color:#fff;
+    box-shadow:0 14px 30px -16px rgba(47,123,255,.9); transition:transform .2s, filter .2s; }
+  .pack .btn:hover { transform:translateY(-2px); filter:brightness(1.08); }
+  .pack .btn.ghost { background:transparent; border:1px solid rgba(47,123,255,.5); color:var(--text);
+    box-shadow:none; font-weight:600; cursor:default; }
+
+  .foot { text-align:center; color:var(--muted); font-size:.78rem; margin-top:2rem; line-height:1.7; }
+  .foot b { color:var(--text); }
+
+  @media (max-width:1000px){ .packs { grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:700px){ .packs { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:520px){
+    .packs { grid-template-columns:1fr; gap:1.2rem; }
+    .pack { min-height:0; }
+    .balance { padding:1.3rem; }
+    .balance .bnote { margin-left:0; text-align:left; width:100%; }
+    .wrap { padding:1.4rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav">
+    <div class="brand"><span class="dot"></span> Uniqpost</div>
+    <a class="back" href="dashboard.html">← В кабинет</a>
+  </div>
+
+  <div class="balance">
+    <span class="bico">💳</span>
+    <div>
+      <div class="bnum"><em>5</em> кредитов</div>
+      <div class="blbl">Доступно уникализаций</div>
+    </div>
+    <div class="bnote">
+      <b>1 кредит = 1 видео</b> (до 90 сек)<br>
+      Кредиты действуют <b>30 дней</b> с покупки
+    </div>
+  </div>
+
+  <div class="sec"><span>ВЫБЕРИТЕ ПАКЕТ <b>КРЕДИТОВ</b></span></div>
+
+  <div class="packs">
+    <div class="pack free">
+      <div class="pname">Пробный</div>
+      <div class="cnt">5<small>кредитов</small></div>
+      <div class="price">Бесплатно</div>
+      <div class="per">попробовать сервис</div>
+      <div class="feats">
+        <div><span class="chk">✓</span><span>5 уникализаций</span></div>
+        <div><span class="chk">✓</span><span>До <b>90 секунд</b></span></div>
+        <div><span class="chk">✓</span><span>Все площадки</span></div>
+      </div>
+      <button class="btn ghost" disabled>Начислено</button>
+    </div>
+
+    <div class="pack">
+      <div class="pname">Старт</div>
+      <div class="cnt">100<small>кредитов</small></div>
+      <div class="price">399 ₽</div>
+      <div class="per">3.99 ₽ за уникализацию</div>
+      <div class="feats">
+        <div><span class="chk">✓</span><span>100 уникализаций</span></div>
+        <div><span class="chk">✓</span><span>До <b>90 секунд</b></span></div>
+        <div><span class="chk">✓</span><span>До 5 версий из ролика</span></div>
+        <div><span class="chk">✓</span><span>Действуют <b>30 дней</b></span></div>
+      </div>
+      <button class="btn" data-pack="100" data-price="399">Купить</button>
+    </div>
+
+    <div class="pack">
+      <div class="pname">Оптимум</div>
+      <div class="cnt">300<small>кредитов</small></div>
+      <div class="price">990 ₽</div>
+      <div class="per">3.3 ₽ за уникализацию</div>
+      <div class="feats">
+        <div><span class="chk">✓</span><span>300 уникализаций</span></div>
+        <div><span class="chk">✓</span><span>До <b>90 секунд</b></span></div>
+        <div><span class="chk">✓</span><span>До 5 версий из ролика</span></div>
+        <div><span class="chk">✓</span><span>Действуют <b>30 дней</b></span></div>
+      </div>
+      <button class="btn" data-pack="300" data-price="990">Купить</button>
+    </div>
+
+    <div class="pack">
+      <div class="pname">Бизнес</div>
+      <div class="cnt">500<small>кредитов</small></div>
+      <div class="price">1400 ₽</div>
+      <div class="per">2.8 ₽ за уникализацию</div>
+      <div class="feats">
+        <div><span class="chk">✓</span><span>500 уникализаций</span></div>
+        <div><span class="chk">✓</span><span>До <b>90 секунд</b></span></div>
+        <div><span class="chk">✓</span><span>До 5 версий из ролика</span></div>
+        <div><span class="chk">✓</span><span>Действуют <b>30 дней</b></span></div>
+      </div>
+      <button class="btn" data-pack="500" data-price="1400">Купить</button>
+    </div>
+
+    <div class="pack best">
+      <span class="tag">Выгодно</span>
+      <div class="pname">Максимум</div>
+      <div class="cnt">1000<small>кредитов</small></div>
+      <div class="price">2490 ₽</div>
+      <div class="per">2.49 ₽ за уникализацию</div>
+      <div class="feats">
+        <div><span class="chk">✓</span><span>1000 уникализаций</span></div>
+        <div><span class="chk">✓</span><span>До <b>90 секунд</b></span></div>
+        <div><span class="chk">✓</span><span>До 5 версий из ролика</span></div>
+        <div><span class="chk">✓</span><span>Действуют <b>30 дней</b></span></div>
+      </div>
+      <button class="btn" data-pack="1000" data-price="2490">Купить</button>
+    </div>
+  </div>
+
+  <div class="foot">
+    Оплата через <b>Tribute</b> · кредиты зачисляются автоматически<br>
+    Длинное видео обрезается до 90 секунд — вы сами выбираете отрезок
+  </div>
+
+</div>
+
+<script>
+  // Заготовка: сюда придёт ссылка на оплату Tribute
+  document.querySelectorAll('.pack .btn[data-pack]').forEach(b => {
+    b.addEventListener('click', () => {
+      const pack = b.dataset.pack, price = b.dataset.price;
+      // TODO: POST /api/tribute/create-payment → получить ссылку Tribute → location.href
+      alert('Пакет ' + pack + ' кредитов за ' + price + ' ₽\n\nПодключение Tribute — следующий шаг.');
+    });
+  });
+</script>
+</body>
+</html>

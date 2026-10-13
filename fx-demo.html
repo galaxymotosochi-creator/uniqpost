@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniqpost — эффекты карточек (демо)</title>
+<style>
+  :root{
+    --bg:#07080c; --panel:#0c0f16; --panel-2:#10141d;
+    --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);}
+  .wrap{max-width:1000px;margin:0 auto;padding:2.4rem 1.2rem 5rem}
+
+  .nav{display:flex;align-items:center;gap:.6rem;margin-bottom:1.6rem}
+  .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--neon);
+    box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.65;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+
+  .intro{text-align:center;margin-bottom:2.6rem}
+  .intro h1{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+  .intro p{color:var(--muted);font-size:.88rem;margin-top:.5rem}
+
+  /* этикетка эффекта */
+  .fx-label{display:flex;align-items:center;gap:1rem;text-transform:uppercase;font-size:.72rem;
+    letter-spacing:.16em;color:var(--muted);margin:3rem 0 1.6rem}
+  .fx-label:before,.fx-label:after{content:"";flex:1;height:1px;background:var(--line)}
+  .fx-label b{color:var(--text)}
+  .fx-note{color:var(--muted);font-size:.78rem;text-align:center;margin:-1rem 0 1.6rem;line-height:1.5}
+
+  /* общий вид плашки */
+  .pcard{border:1px solid var(--line);border-radius:20px;
+    background:linear-gradient(160deg, rgba(20,26,38,.98), rgba(10,14,21,.98));
+    box-shadow:0 -1px 0 rgba(255,255,255,.03) inset, 0 30px 70px -40px rgba(0,0,0,.95);
+    padding:1.6rem 1.8rem;overflow:hidden;position:relative}
+  .pcard:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(47,123,255,.6),transparent)}
+  .pname{font-size:.9rem;font-weight:700;color:var(--muted)}
+  .cnt{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:.2rem}
+  .cnt small{display:block;font-size:.64rem;font-weight:600;color:var(--muted);letter-spacing:.06em;
+    text-transform:uppercase;margin-top:.12rem}
+  .price{font-size:1.3rem;font-weight:800;margin:.6rem 0 .12rem}
+  .per{color:var(--muted);font-size:.7rem}
+  .btn{display:block;width:100%;padding:.7rem 1rem;border-radius:100px;border:none;cursor:pointer;
+    font-family:inherit;font-weight:700;font-size:.82rem;color:#fff;
+    background:linear-gradient(135deg,#2f7bff,#1b5fd6);
+    box-shadow:0 14px 30px -16px rgba(47,123,255,.9);transition:transform .2s,filter .2s}
+  .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+  .tagrow{margin-top:.7rem;display:flex;flex-wrap:wrap;gap:.3rem}
+  .tagrow span{font-size:.62rem;font-weight:600;color:var(--neon-2);
+    border:1px solid rgba(47,123,255,.4);background:var(--neon-soft);border-radius:100px;padding:.14rem .5rem}
+
+  /* ══ 1. НАХЛЁСТ (sticky stack) ══ */
+  .fx-overlap .stack{position:relative}
+  .fx-overlap .pcard{position:sticky;top:0;margin-bottom:1.1rem;min-height:64vh;
+    display:flex;align-items:center;gap:2rem}
+  .fx-overlap .pcard .body{flex:1;min-width:0;padding-top:.6rem}
+  .fx-overlap .pcard .act{flex:0 0 200px}
+  .fx-overlap .pcard:nth-child(2){top:62px}
+  .fx-overlap .pcard:nth-child(3){top:124px}
+  .fx-overlap .pcard:nth-child(4){top:186px}
+
+  /* ══ 2. ЛИПКАЯ ШАПКА + ЗАХОД (sticky header reveal) ══ */
+  .fx-sticky{padding-top:.5rem}
+  .fx-sticky .stack{position:relative}
+  .fx-sticky .pcard{position:sticky;top:0;margin-bottom:.7rem;padding:0;min-height:auto}
+  .fx-sticky .pcard .head{display:flex;align-items:center;gap:1rem;padding:1.1rem 1.8rem}
+  .fx-sticky .pcard .head .h-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:var(--neon-soft);border:1px solid var(--line);font-size:1rem}
+  .fx-sticky .pcard .head .h-name{font-weight:700;font-size:1rem}
+  .fx-sticky .pcard .head .h-price{margin-left:auto;font-weight:800;color:var(--neon-2)}
+  .fx-sticky .pcard .head .h-btn{border:none;border-radius:100px;padding:.5rem 1rem;font-family:inherit;
+    font-weight:700;font-size:.76rem;color:#fff;background:linear-gradient(135deg,#2f7bff,#1b5fd6);cursor:pointer}
+
+  /* ══ 3. ГОРИЗОНТАЛЬНАЯ КАРУСЕЛЬ (snap) ══ */
+  .fx-carousel .rail{display:flex;gap:.9rem;overflow-x:auto;scroll-snap-type:x mandatory;
+    padding:1.4rem .2rem 1.1rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .fx-carousel .rail::-webkit-scrollbar{display:none}
+  .fx-carousel .pcard{flex:0 0 240px;min-height:540px;scroll-snap-align:center;padding:1.9rem 1.4rem;
+    display:flex;flex-direction:column;justify-content:flex-start}
+  .fx-carousel .pcard .btn{margin-top:auto}
+  .fx-carousel .pcard .pfeats{border-top:1px solid var(--line);margin-top:.95rem;padding-top:.75rem}
+  .fx-carousel .pcard .pfeats>div{display:flex;align-items:flex-start;gap:.45rem;padding:.22rem 0;
+    font-size:.74rem;color:var(--muted);line-height:1.4}
+  .fx-carousel .pcard .pfeats b{color:var(--neon-2);font-weight:700}
+  .fx-carousel .pcard .pi{flex:none;font-size:.85rem}
+  .fx-carousel .pcard .ptags{display:flex;flex-wrap:wrap;gap:.3rem;margin:.85rem 0 1rem}
+  .fx-carousel .pcard .ptags span{font-size:.6rem;font-weight:600;color:var(--neon-2);
+    border:1px solid rgba(47,123,255,.4);background:var(--neon-soft);border-radius:100px;padding:.14rem .5rem}
+  .fx-carousel .pcard.best{border-color:rgba(47,123,255,.55);
+    box-shadow:0 28px 60px -34px rgba(47,123,255,.8),0 0 0 1px rgba(47,123,255,.12) inset}
+  .fx-carousel .pcard .tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+    font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+    background:linear-gradient(135deg,#2f7bff,#1b5fd6);border-radius:100px;padding:.2rem .7rem;
+    box-shadow:0 8px 20px -8px rgba(47,123,255,.9);white-space:nowrap}
+  .fx-carousel .hint{text-align:center;color:var(--muted);font-size:.74rem;margin-top:.2rem}
+
+  /* ══ 4. РАСКРЫВАЮЩИЕСЯ (accordion) ══ */
+  .fx-accordion .acc{border:1px solid var(--line);border-radius:16px;margin-bottom:.6rem;overflow:hidden;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel))}
+  .fx-accordion .acc-head{display:flex;align-items:center;gap:.9rem;padding:1rem 1.2rem;cursor:pointer;user-select:none}
+  .fx-accordion .acc-head .name{font-weight:700;font-size:.95rem}
+  .fx-accordion .acc-head .price{margin-left:auto;font-weight:800;color:var(--neon-2);font-size:.95rem}
+  .fx-accordion .acc-head .arrow{transition:transform .3s;color:var(--muted)}
+  .fx-accordion .acc.open .acc-head .arrow{transform:rotate(180deg)}
+  .fx-accordion .acc-body{max-height:0;overflow:hidden;transition:max-height .35s ease;
+    border-top:1px solid transparent}
+  .fx-accordion .acc.open .acc-body{max-height:320px;border-top-color:var(--line)}
+  .fx-accordion .acc-body .inner{padding:1rem 1.2rem;display:flex;align-items:center;gap:1.2rem}
+
+  /* ══ 5. ЗАХОД С МАСШТАБОМ (scale-stack) ══ */
+  .fx-scale .stack{position:relative;padding-bottom:70vh}
+  .fx-scale .pcard{position:sticky;top:0;margin-bottom:2.4rem;min-height:56vh;
+    display:flex;align-items:center;gap:2rem;transform-origin:center top;
+    will-change:transform,opacity}
+  .fx-scale .pcard .body{flex:1;min-width:0;padding-top:.6rem}
+  .fx-scale .pcard .act{flex:0 0 200px}
+
+  @media (max-width:820px){
+    .fx-overlap .pcard{flex-direction:column;align-items:stretch;min-height:auto;padding:1.3rem;gap:1rem}
+    .fx-overlap .pcard .act{flex:none}
+    .fx-scale .pcard{flex-direction:column;align-items:stretch;min-height:auto;padding:1.3rem;gap:1rem}
+    .fx-scale .pcard .act{flex:none}
+    .fx-carousel .pcard{flex:0 0 78%}
+    .fx-accordion .acc-body .inner{flex-direction:column;align-items:stretch}
+    .fx-sticky .pcard .head{padding:1rem 1.1rem;gap:.7rem}
+    .fx-sticky .pcard .head .h-btn{padding:.45rem .8rem;font-size:.72rem}
+    .pcard{padding:1.2rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav"><div class="brand"><span class="dot"></span> Uniqpost</div></div>
+
+  <div class="intro">
+    <h1>5 эффектов для тарифов</h1>
+    <p>Смотрите на телефоне и выберите, какой оставляем</p>
+  </div>
+
+  <!-- ══════════ 1. НАХЛЁСТ ══════════ -->
+  <div class="fx-label"><span>Эффект 1 — <b>НАХЛЁСТ</b></span></div>
+  <div class="fx-note">Плашки прилипают друг к другу и наезжают сверху — то, что уже видели</div>
+  <div class="fx-overlap"><div class="stack">
+    <div class="pcard"><div class="body"><div class="pname">Старт</div><div class="cnt">100<small>кредитов</small></div><div class="price">399 ₽</div><div class="per">3.99 ₽ за уникализацию</div><div class="tagrow"><span>90 секунд</span><span>5 версий</span></div></div><div class="act"><button class="btn">Купить</button></div></div>
+    <div class="pcard"><div class="body"><div class="pname">Оптимум</div><div class="cnt">300<small>кредитов</small></div><div class="price">990 ₽</div><div class="per">3.3 ₽ за уникализацию</div><div class="tagrow"><span>90 секунд</span><span>5 версий</span></div></div><div class="act"><button class="btn">Купить</button></div></div>
+    <div class="pcard"><div class="body"><div class="pname">Бизнес</div><div class="cnt">500<small>кредитов</small></div><div class="price">1400 ₽</div><div class="per">2.8 ₽ за уникализацию</div><div class="tagrow"><span>90 секунд</span><span>5 версий</span></div></div><div class="act"><button class="btn">Купить</button></div></div>
+    <div class="pcard"><div class="body"><div class="pname">Максимум</div><div class="cnt">1000<small>кредитов</small></div><div class="price">2490 ₽</div><div class="per">2.49 ₽ за уникализацию</div><div class="tagrow"><span>90 секунд</span><span>5 версий</span></div></div><div class="act"><button class="btn">Купить</button></div></div>
+  </div></div>
+
+  <!-- ══════════ 2. ЛИПКАЯ ШАПКА ══════════ -->
+  <div class="fx-label"><span>Эффект 2 — <b>ЛИПКАЯ ШАПКА</b></span></div>
+  <div class="fx-note">Компактно: каждый тариф — строка-шапка. При прокрутке складываются стопкой, видно всё сразу</div>
+  <div class="fx-sticky"><div class="stack">
+    <div class="pcard"><div class="head"><span class="h-icon">5</span><span class="h-name">Пробный</span><span class="h-price">Бесплатно</span><button class="h-btn">Начислено</button></div></div>
+    <div class="pcard"><div class="head"><span class="h-icon">100</span><span class="h-name">Старт</span><span class="h-price">399 ₽</span><button class="h-btn">Купить</button></div></div>
+    <div class="pcard"><div class="head"><span class="h-icon">300</span><span class="h-name">Оптимум</span><span class="h-price">990 ₽</span><button class="h-btn">Купить</button></div></div>
+    <div class="pcard"><div class="head"><span class="h-icon">500</span><span class="h-name">Бизнес</span><span class="h-price">1400 ₽</span><button class="h-btn">Купить</button></div></div>
+    <div class="pcard"><div class="head"><span class="h-icon">1000</span><span class="h-name">Максимум</span><span class="h-price">2490 ₽</span><button class="h-btn">Купить</button></div></div>
+  </div></div>
+
+  <!-- ══════════ 3. КАРУСЕЛЬ ══════════ -->
+  <div class="fx-label"><span>Эффект 3 — <b>КАРУСЕЛЬ</b></span></div>
+  <div class="fx-note">Плашки едут вбок пальцем, каждая останавливается чётко по центру.<br>Внутри — что входит в тариф (вариант A)</div>
+  <div class="fx-carousel"><div class="rail">
+
+    <div class="pcard">
+      <div class="pname">Старт</div>
+      <div class="cnt">100<small>кредитов</small></div>
+      <div class="price">399 ₽</div>
+      <div class="per">≈ 100 видео | 3.99 ₽ за уникализацию</div>
+      <div class="pfeats">
+        <div><span class="chk">✓</span><span>Уникализация видео — <b>1 кредит</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг фото — <b>0.3 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг текста — <b>0.2 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>ИИ-создание текста — <b>0.5 кредита</b></span></div>
+      </div>
+      <button class="btn">Купить</button>
+    </div>
+
+    <div class="pcard">
+      <div class="pname">Оптимум</div>
+      <div class="cnt">300<small>кредитов</small></div>
+      <div class="price">990 ₽</div>
+      <div class="per">≈ 300 видео | 3.3 ₽ за уникализацию</div>
+      <div class="pfeats">
+        <div><span class="chk">✓</span><span>Уникализация видео — <b>1 кредит</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг фото — <b>0.3 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг текста — <b>0.2 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>ИИ-создание текста — <b>0.5 кредита</b></span></div>
+      </div>
+      <button class="btn">Купить</button>
+    </div>
+
+    <div class="pcard">
+      <div class="pname">Бизнес</div>
+      <div class="cnt">500<small>кредитов</small></div>
+      <div class="price">1400 ₽</div>
+      <div class="per">≈ 500 видео | 2.8 ₽ за уникализацию</div>
+      <div class="pfeats">
+        <div><span class="chk">✓</span><span>Уникализация видео — <b>1 кредит</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг фото — <b>0.3 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг текста — <b>0.2 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>ИИ-создание текста — <b>0.5 кредита</b></span></div>
+      </div>
+      <button class="btn">Купить</button>
+    </div>
+
+    <div class="pcard best">
+      <span class="tag">Выгодно</span>
+      <div class="pname">Максимум</div>
+      <div class="cnt">1000<small>кредитов</small></div>
+      <div class="price">2490 ₽</div>
+      <div class="per">≈ 1000 видео | 2.49 ₽ за уникализацию</div>
+      <div class="pfeats">
+        <div><span class="chk">✓</span><span>Уникализация видео — <b>1 кредит</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг фото — <b>0.3 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>Автопостинг текста — <b>0.2 кредита</b></span></div>
+        <div><span class="chk">✓</span><span>ИИ-создание текста — <b>0.5 кредита</b></span></div>
+      </div>
+      <button class="btn">Купить</button>
+    </div>
+
+  </div><div class="hint">← смахните →</div></div>
+
+  <!-- ══════════ 4. РАСКРЫВАЮЩИЕСЯ ══════════ -->
+  <div class="fx-label"><span>Эффект 4 — <b>РАСКРЫВАЮТСЯ</b></span></div>
+  <div class="fx-note">Самый компактный: список тарифов, по клику раскрываются детали</div>
+  <div class="fx-accordion">
+    <div class="acc open"><div class="acc-head"><span class="name">Пробный</span><span class="price">Бесплатно</span><span class="arrow">▾</span></div>
+      <div class="acc-body"><div class="inner"><div><div class="cnt" style="font-size:1.5rem">5<small>кредитов</small></div></div><div style="flex:1"><div class="per">5 уникализаций · до 90 сек · все площадки</div></div><button class="btn" style="width:auto;padding:.6rem 1.2rem" disabled>Начислено</button></div></div></div>
+    <div class="acc"><div class="acc-head"><span class="name">Старт</span><span class="price">399 ₽</span><span class="arrow">▾</span></div>
+      <div class="acc-body"><div class="inner"><div><div class="cnt" style="font-size:1.5rem">100<small>кредитов</small></div></div><div style="flex:1"><div class="per">100 уникализаций · до 90 сек · 5 версий · 30 дней</div></div><button class="btn" style="width:auto;padding:.6rem 1.2rem">Купить</button></div></div></div>
+    <div class="acc"><div class="acc-head"><span class="name">Оптимум</span><span class="price">990 ₽</span><span class="arrow">▾</span></div>
+      <div class="acc-body"><div class="inner"><div><div class="cnt" style="font-size:1.5rem">300<small>кредитов</small></div></div><div style="flex:1"><div class="per">300 уникализаций · до 90 сек · 5 версий · 30 дней</div></div><button class="btn" style="width:auto;padding:.6rem 1.2rem">Купить</button></div></div></div>
+    <div class="acc"><div class="acc-head"><span class="name">Бизнес</span><span class="price">1400 ₽</span><span class="arrow">▾</span></div>
+      <div class="acc-body"><div class="inner"><div><div class="cnt" style="font-size:1.5rem">500<small>кредитов</small></div></div><div style="flex:1"><div class="per">500 уникализаций · до 90 сек · 5 версий · 30 дней</div></div><button class="btn" style="width:auto;padding:.6rem 1.2rem">Купить</button></div></div></div>
+    <div class="acc"><div class="acc-head"><span class="name">Максимум</span><span class="price">2490 ₽</span><span class="arrow">▾</span></div>
+      <div class="acc-body"><div class="inner"><div><div class="cnt" style="font-size:1.5rem">1000<small>кредитов</small></div></div><div style="flex:1"><div class="per">1000 уникализаций · до 90 сек · 5 версий · 30 дней</div></div><button class="btn" style="width:auto;padding:.6rem 1.2rem">Купить</button></div></div></div>
+  </div>
+
+  <!-- ══════════ 5. ЗАХОД С МАСШТАБОМ ══════════ -->
+  <div class="fx-label"><span>Эффект 5 — <b>МАСШТАБ</b></span></div>
+  <div class="fx-note">Как нахлёст, но верхняя плашка «уплывает» вглубь и уменьшается — эффект глубины</div>
+  <div class="fx-scale"><div class="stack">
+    <div class="pcard"><div class="body"><div class="pname">Старт</div><div class="cnt">100<small>кредитов</small></div><div class="price">399 ₽</div><div class="per">3.99 ₽ за уникализацию</div></div><div class="act"><button class="btn">Купить</button></div></div>
+    <div class="pcard"><div class="body"><div class="pname">Оптимум</div><div class="cnt">300<small>кредитов</small></div><div class="price">990 ₽</div><div class="per">3.3 ₽ за уникализацию</div></div><div class="act"><button class="btn">Купить</button></div></div>
+    <div class="pcard"><div class="body"><div class="pname">Бизнес</div><div class="cnt">500<small>кредитов</small></div><div class="price">1400 ₽</div><div class="per">2.8 ₽ за уникализацию</div></div><div class="act"><button class="btn">Купить</button></div></div>
+    <div class="pcard"><div class="body"><div class="pname">Максимум</div><div class="cnt">1000<small>кредитов</small></div><div class="price">2490 ₽</div><div class="per">2.49 ₽ за уникализацию</div></div><div class="act"><button class="btn">Купить</button></div></div>
+  </div></div>
+
+</div>
+
+<script>
+  // аккордеон
+  document.querySelectorAll('.fx-accordion .acc-head').forEach(h=>{
+    h.addEventListener('click',()=>h.parentElement.classList.toggle('open'));
+  });
+
+  // scale-stack: КАЖДАЯ плашка уходит вглубь, когда её накрывает следующая
+  const scaleCards=[...document.querySelectorAll('.fx-scale .pcard')];
+  function onScale(){
+    scaleCards.forEach((c,i)=>{
+      const next=scaleCards[i+1];
+      let cover=0;
+      if(next){
+        // накрытие следующей плашкой
+        const r=c.getBoundingClientRect();
+        const nr=next.getBoundingClientRect();
+        cover=Math.max(0,Math.min(1,(r.bottom-nr.top)/r.height));
+      } else {
+        // ПОСЛЕДНЯЯ: уходит вглубь по мере докрутки страницы до конца
+        const r=c.getBoundingClientRect();
+        const bottomGap=window.innerHeight-r.bottom; // сколько осталось до низа экрана
+        const range=window.innerHeight*0.6;          // за какое расстояние уходит
+        cover=Math.max(0,Math.min(1,bottomGap/range));
+      }
+      const s=1-cover*0.12, o=1-cover*0.55;
+      c.style.transform=`scale(${s})`;
+      c.style.opacity=o;
+    });
+  }
+  let rafScale=null;
+  window.addEventListener('scroll',()=>{ if(!rafScale) rafScale=requestAnimationFrame(()=>{onScale();rafScale=null;}); },{passive:true});
+  window.addEventListener('resize',onScale);
+  onScale();
+</script>
+</body>
+</html>

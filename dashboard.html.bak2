@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uniqpost — Кабинет</title>
+<style>
+  :root {
+    --bg:#07080c; --panel:#0c0f16; --panel-2:#10141d;
+    --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:var(--font); background:var(--bg); color:var(--text); min-height:100vh;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);
+    background-attachment:fixed;
+  }
+  a.btn { text-decoration:none !important; }
+  .btn { border:none; border-radius:100px; padding:.55rem 1.15rem; font-family:var(--font); font-size:.82rem; font-weight:600; cursor:pointer; transition:all .18s; }
+  .btn-ghost { background:transparent; color:var(--muted); }
+  .btn-ghost:hover { color:var(--text); }
+  .btn-neon { background:linear-gradient(135deg,#2f7bff,#0d4ea8); color:#fff; box-shadow:0 0 18px rgba(47,123,255,.45),0 6px 22px -8px rgba(47,123,255,.7); }
+  .btn-neon:hover { box-shadow:0 0 28px rgba(47,123,255,.7),0 8px 26px -8px rgba(47,123,255,.9); transform:translateY(-1px); }
+  .logout-btn { border:1px solid var(--line); background:transparent; color:var(--muted); border-radius:100px; padding:.5rem 1rem; font-family:var(--font); font-size:.8rem; font-weight:600; cursor:pointer; transition:all .18s; }
+  .logout-btn:hover { color:var(--text); border-color:var(--neon); }
+
+  .nav { display:flex; align-items:center; gap:1.6rem; padding:1rem 1.8rem; border-bottom:1px solid var(--line); backdrop-filter:blur(12px); position:sticky; top:0; z-index:50; background:rgba(7,8,12,.72); }
+  .brand { display:flex; align-items:center; gap:.55rem; font-weight:800; font-size:1.05rem; letter-spacing:-.02em; }
+  .brand .dot { width:11px; height:11px; border-radius:50%; background:var(--neon); box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6); animation:pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.65;transform:scale(.92)} 50%{opacity:1;transform:scale(1.08)} }
+  .nav-links { display:flex; gap:1.4rem; font-size:.86rem; color:var(--muted); margin-left:1rem; }
+  .nav-links span { cursor:pointer; transition:color .18s; padding-bottom:2px; }
+  .nav-links span:hover { color:var(--text); }
+  .nav-links .active { color:var(--neon-2); border-bottom:2px solid var(--neon); }
+  .nav-right { margin-left:auto; display:flex; align-items:center; gap:.7rem; }
+  .user-chip { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:var(--muted); }
+  .user-chip .av { width:28px; height:28px; border-radius:50%; background:var(--neon-soft); border:1px solid var(--line); display:grid; place-items:center; font-size:.8rem; color:var(--neon-2); font-weight:700; }
+
+  .wrap { max-width:1180px; margin:0 auto; padding:2.2rem 1.8rem 4rem; }
+  .head { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; margin-bottom:1.6rem; flex-wrap:wrap; }
+  .head h1 { font-size:1.7rem; font-weight:800; letter-spacing:-.025em; }
+  .head p { color:var(--muted); font-size:.88rem; margin-top:.35rem; }
+
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.9rem; margin-bottom:1.5rem; }
+  .stat { background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:16px; padding:1.05rem 1.15rem; position:relative; overflow:hidden; }
+  .stat:before { content:""; position:absolute; inset:0 auto auto 0; width:100%; height:1px; background:linear-gradient(90deg,transparent,rgba(47,123,255,.5),transparent); }
+  .stat .lbl { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; font-weight:600; }
+  .stat .val { font-size:1.6rem; font-weight:800; margin-top:.35rem; letter-spacing:-.02em; }
+  .stat .val em { font-style:normal; color:var(--neon-2); }
+  .stat .sub { color:var(--muted); font-size:.72rem; margin-top:.2rem; }
+
+  .grid { display:grid; grid-template-columns:1.6fr 1fr; gap:1.2rem; }
+  .card { background:linear-gradient(180deg,var(--panel-2),var(--panel)); border:1px solid var(--line); border-radius:18px; padding:1.3rem 1.4rem; }
+  .card h2 { font-size:1rem; font-weight:700; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+  .card h2 .tick { width:6px; height:6px; border-radius:50%; background:var(--neon); box-shadow:0 0 10px var(--neon); }
+
+  .drop { border:1.5px dashed rgba(60,130,255,.35); border-radius:14px; padding:1.8rem 1rem; text-align:center; cursor:pointer; transition:all .2s; background:rgba(47,123,255,.03); }
+  .drop:hover { border-color:var(--neon); background:var(--neon-soft); box-shadow:0 0 24px rgba(47,123,255,.14) inset; }
+  .drop .ic { font-size:1.6rem; }
+  .drop p { margin-top:.5rem; font-size:.86rem; }
+  .drop small { color:var(--muted); font-size:.75rem; }
+
+  .empty { text-align:center; padding:1.6rem 1rem; color:var(--muted); }
+  .empty .ic { font-size:1.7rem; opacity:.7; }
+  .empty p { font-size:.86rem; margin-top:.5rem; color:var(--text); font-weight:600; }
+  .empty small { font-size:.76rem; display:block; margin-top:.3rem; }
+
+  .sched-row { display:flex; align-items:center; gap:.7rem; padding:.7rem .8rem; border-radius:12px; border:1px solid var(--line); margin-bottom:.55rem; background:rgba(255,255,255,.012); }
+  .acc { display:flex; align-items:center; gap:.45rem; font-size:.82rem; }
+  .acc .ic { width:26px; height:26px; border-radius:8px; display:grid; place-items:center; font-size:.8rem; background:var(--neon-soft); border:1px solid var(--line); }
+  .time { margin-left:auto; font-variant-numeric:tabular-nums; font-size:.82rem; color:var(--neon-2); font-weight:600; }
+  .badge { font-size:.68rem; padding:.2rem .55rem; border-radius:100px; font-weight:600; border:1px solid var(--line); color:var(--muted); }
+  .badge.on { color:var(--neon-2); border-color:rgba(47,123,255,.4); background:var(--neon-soft); }
+
+  .qitem { display:flex; gap:.75rem; align-items:flex-start; padding:.65rem 0; border-bottom:1px solid var(--line); }
+  .qitem:last-child { border-bottom:none; }
+  .thumb { width:74px; height:96px; min-width:74px; max-width:74px; flex:0 0 74px; border-radius:9px; overflow:hidden; background:repeating-linear-gradient(135deg,#141a26,#141a26 8px,#0e1320 8px,#0e1320 16px); border:1px solid var(--line); display:grid; place-items:center; color:var(--muted); font-size:.9rem; align-self:flex-start; }
+  .thumb img { width:74px !important; height:96px !important; object-fit:cover; display:block; border-radius:9px; }
+  .qmeta { flex:1; min-width:0; }
+  .qmeta .t { font-size:.84rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .qmeta .s { font-size:.74rem; color:var(--muted); margin-top:.15rem; }
+  .pill { font-size:.68rem; padding:.22rem .6rem; border-radius:100px; font-weight:600; align-self:center; white-space:nowrap; }
+  .pill.wait { color:var(--neon-2); border:1px solid rgba(47,123,255,.35); background:var(--neon-soft); }
+
+  footer { text-align:center; color:var(--muted); font-size:.76rem; padding:2rem 0 0; }
+
+  @media (max-width:900px) { .stats{grid-template-columns:repeat(2,1fr)} .grid{grid-template-columns:1fr} .nav-links{display:none} }
+  @media (max-width:640px) {
+    .wrap{padding:1.4rem 1rem 3rem} .stats{grid-template-columns:1fr;gap:.7rem} .grid{gap:.9rem}
+    .card{padding:1.05rem 1rem} .head h1{font-size:1.35rem} .nav{padding:.85rem 1rem;gap:.8rem}
+    .user-chip span.uname{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand"><span class="dot"></span> uniqpost</div>
+  <div class="nav-links">
+    <span class="active">Обзор</span>
+    <span>Видео</span>
+    <span>Аккаунты</span>
+    <span>Расписание</span>
+    <span>Настройки</span>
+  </div>
+  <div class="nav-right">
+    <div class="user-chip">
+      <span class="av" id="avatar">Ю</span>
+      <span class="uname" id="uname">Кабинет</span>
+    </div>
+    <button class="logout-btn" onclick="localStorage.clear();location.href='login.html'">Выйти</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Обзор</h1>
+      <p>Ваши видео, аккаунты и расписание</p>
+    </div>
+    <button class="btn btn-neon" onclick="document.getElementById('fileInput').click()">+ Загрузить видео</button>
+    <input type="file" id="fileInput" accept="video/*" style="display:none">
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="lbl">Аккаунтов</div><div class="val" id="statAcc"><em>0</em></div><div class="sub" id="statAccSub">не подключено</div></div>
+    <div class="stat"><div class="lbl">Видео</div><div class="val" id="statVid">0</div><div class="sub">загружено</div></div>
+    <div class="stat"><div class="lbl">Публикаций</div><div class="val" id="statPub">0</div><div class="sub">отправлено</div></div>
+    <div class="stat"><div class="lbl">В очереди</div><div class="val" id="statQ"><em>0</em></div><div class="sub">запланировано</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span class="tick"></span> Видео</h2>
+      <div style="display:flex;gap:.5rem;margin-bottom:.8rem">
+        <input id="urlInput" type="text" placeholder="Вставьте ссылку на видео (TikTok, YouTube, Instagram…)"
+          style="flex:1;min-width:0;padding:.7rem .85rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.85rem;outline:none">
+        <button class="btn btn-neon" onclick="doDownload()">Скачать</button>
+      </div>
+      <div class="drop" onclick="document.getElementById('fileInput').click()">
+        <div class="ic">🎬</div>
+        <p>Или перетащите видеофайл</p>
+        <small>MP4, MOV, либо вставьте ссылку выше</small>
+      </div>
+      <div id="workStatus" style="text-align:center;font-size:.8rem;color:var(--neon-2);min-height:1.2rem;margin-top:.6rem"></div>
+      <div id="videoList" style="margin-top:1rem">
+        <div class="empty">
+          <div class="ic">🎞</div>
+          <p>Видео пока нет</p>
+          <small>Загрузите первое видео или вставьте ссылку</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="tick"></span> Очередь</h2>
+      <div id="queueList">
+        <div class="empty">
+          <div class="ic">🕓</div>
+          <p>Очередь пуста</p>
+          <small>Запланированные публикации появятся здесь</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:1.2rem">
+    <div class="card">
+      <h2><span class="tick"></span> Мои аккаунты</h2>
+      <div id="accList">
+        <div class="empty">
+          <div class="ic">🔗</div>
+          <p>Аккаунты не подключены</p>
+          <small>Подключите Instagram, Facebook, VK или Telegram</small>
+        </div>
+      </div>
+      <button class="btn btn-neon" style="margin-top:1rem;width:100%" onclick="openConnect()">+ Подключить аккаунт</button>
+    </div>
+
+    <div class="card">
+      <h2><span class="tick"></span> Расписание</h2>
+      <div id="schedList">
+        <div class="empty">
+          <div class="ic">📅</div>
+          <p>Расписание пустое</p>
+          <small>Добавьте аккаунт, чтобы настроить время публикаций</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>uniqpost — личный кабинет</footer>
+</div>
+
+<script>
+  const API = '/api';
+  const token = () => localStorage.getItem('uniqpost_token') || '';
+  const authH = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() });
+
+  // ── Автовход через Telegram (Mini App) ──
+  // Если открыто внутри Telegram — входим по данным Telegram (без пароля и без потери токена)
+  function setUser(email, name) {
+    try {
+      localStorage.setItem('uniqpost_email', email || '');
+      const em = email || 'yulia9500@mail.ru';
+      document.getElementById('avatar').textContent = (em[0] || 'Ю').toUpperCase();
+      document.getElementById('uname').textContent = name || em;
+    } catch (e) {}
+  }
+
+  async function tgAutoLogin() {
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (!tg || !tg.initData) return false;
+    try {
+      const r = await fetch(API + '/telegram-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: tg.initData })
+      });
+      const data = await r.json();
+      if (!r.ok || !data.ok) return false;
+      localStorage.setItem('uniqpost_token', data.token);
+      localStorage.setItem('uniqpost_name', data.name || '');
+      setUser(data.email, data.name);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Охрана + автовход
+  (async () => {
+    if (token()) { setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name')); return; }
+    const ok = await tgAutoLogin();
+    if (!ok) { location.replace('login.html'); }
+  })();
+
+  // Имя в шапке
+  setUser(localStorage.getItem('uniqpost_email'), localStorage.getItem('uniqpost_name'));
+
+  const workStatus = document.getElementById('workStatus');
+  const setStatus = t => { workStatus.textContent = t || ''; };
+
+  // ── Отрисовка одной записи видео ──
+  function renderRow(v) {
+    const list = document.getElementById('videoList');
+    const emptyEl = list.querySelector('.empty');
+    if (emptyEl) emptyEl.remove();
+    // не дублируем
+    if (list.querySelector('[data-id="' + v.id + '"]')) return;
+
+    const row = document.createElement('div');
+    row.className = 'qitem';
+    row.dataset.id = v.id;
+    row.innerHTML = '<div class="thumb">▶</div><div class="qmeta"><div class="t"></div><div class="s"></div></div><span class="pill wait"></span>';
+    row.querySelector('.t').textContent = v.file;
+    row.querySelector('.s').textContent = v.label + (v.size ? ' · ' + (v.size/1024/1024).toFixed(1) + ' МБ' : '');
+    // кадр видео вместо серого прямоугольника (через fetch с токеном → blob)
+    if (v.thumb) {
+      const th = row.querySelector('.thumb');
+      const img = document.createElement('img');
+      img.alt = '';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:9px;display:block';
+      th.textContent = '';
+      th.appendChild(img);
+      fetch(API + '/thumb/' + encodeURIComponent(v.thumb), { headers: { 'Authorization': 'Bearer ' + token() } })
+        .then(r => r.ok ? r.blob() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then(b => { img.src = URL.createObjectURL(b); })
+        .catch(() => { img.remove(); th.textContent = '▶'; });
+    }
+    row.querySelector('.pill').textContent = 'Готово';
+
+    const box = document.createElement('div');
+    box.style.cssText = 'display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap';
+    let html = '';
+    if (v.type === 'original') {
+      html += '<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .8rem">🎨 Уникализировать</button>';
+    }
+    html += '<a class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);text-decoration:none" ' +
+            'href="' + API + '/file/' + encodeURIComponent(v.file) + '">⬇ Скачать</a>' +
+            '<button class="btn btn-ghost" style="font-size:.72rem;padding:.4rem .8rem;border:1px solid var(--line);color:#ff6b6b">✕ Удалить</button>';
+    box.innerHTML = html;
+    const uqBtn = box.querySelector('.btn-neon');
+    if (uqBtn) uqBtn.onclick = () => doUniquify(v.file);
+    box.querySelector('a').onclick = (e) => dlFile(e, box.querySelector('a'));
+    box.querySelector('button:last-child').onclick = () => delVideo(v.id);
+    row.querySelector('.qmeta').appendChild(box);
+
+    list.prepend(row);
+    document.getElementById('statVid').textContent = list.querySelectorAll('.qitem').length;
+  }
+
+  // ── Загрузка списка с сервера ──
+  async function loadVideos() {
+    try {
+      const r = await fetch(API + '/videos', { headers: authH() });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      const list = document.getElementById('videoList');
+      list.querySelectorAll('.qitem').forEach(e => e.remove());
+      if (!data.videos.length) {
+        if (!list.querySelector('.empty')) list.innerHTML = '<div class="empty"><div class="ic">🎞</div><p>Видео пока нет</p><small>Загрузите первое видео или вставьте ссылку</small></div>';
+      } else {
+        data.videos.slice().reverse().forEach(renderRow);
+      }
+      document.getElementById('statVid').textContent = data.videos.length;
+    } catch (e) { setStatus(e.message); }
+  }
+
+  // ── Скачать по ссылке ──
+  async function doDownload() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) { setStatus('Вставьте ссылку'); return; }
+    setStatus('Скачиваю в лучшем качестве…');
+    try {
+      const r = await fetch(API + '/download', { method: 'POST', headers: authH(), body: JSON.stringify({ url }) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      setStatus('Скачано: ' + (data.size/1024/1024).toFixed(1) + ' МБ');
+      document.getElementById('urlInput').value = '';
+      if (data.rec) renderRow(data.rec);
+      else await loadVideos();
+    } catch (e) { setStatus(e.message); }
+  }
+
+  // ── Уникализировать ──
+  async function doUniquify(file) {
+    const howMany = prompt('Сколько версий видео прислать? (1–5)', '1');
+    if (!howMany) return;
+    const count = Math.max(1, Math.min(5, parseInt(howMany, 10) || 1));
+    setStatus('Уникализирую ' + count + '…');
+    try {
+      const r = await fetch(API + '/uniquify', { method: 'POST', headers: authH(), body: JSON.stringify({ file, count }) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      setStatus('Готово: ' + data.files.length + ' версий');
+      await loadVideos();
+    } catch (e) { setStatus(e.message); }
+  }
+
+  // ── Удалить видео ──
+  async function delVideo(id) {
+    if (!confirm('Удалить это видео?')) return;
+    try {
+      const r = await fetch(API + '/videos/delete', { method: 'POST', headers: authH(), body: JSON.stringify({ id }) });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      const row = document.querySelector('[data-id="' + id + '"]');
+      if (row) row.remove();
+      const list = document.getElementById('videoList');
+      if (!list.querySelector('.qitem')) list.innerHTML = '<div class="empty"><div class="ic">🎞</div><p>Видео пока нет</p><small>Загрузите первое видео или вставьте ссылку</small></div>';
+      document.getElementById('statVid').textContent = list.querySelectorAll('.qitem').length;
+    } catch (e) { setStatus(e.message); }
+  }
+
+  // ── Скачать файл ──
+  async function dlFile(e, a) {
+    e.preventDefault();
+    try {
+      const r = await fetch(a.href, { headers: { 'Authorization': 'Bearer ' + token() } });
+      const b = await r.blob();
+      const u = URL.createObjectURL(b);
+      const t = document.createElement('a');
+      t.href = u; t.download = a.href.split('/').pop(); t.click();
+      URL.revokeObjectURL(u);
+    } catch (err) { setStatus(err.message); }
+  }
+
+  // Загрузка файла с устройства (реально, через API)
+  document.getElementById('fileInput').addEventListener('change', async (ev) => {
+    const f = ev.target.files[0];
+    if (!f) return;
+    const sizeMb = (f.size/1024/1024).toFixed(1);
+    setStatus('Загружаю файл (' + sizeMb + ' МБ)…');
+    try {
+      const fd = new FormData();
+      fd.append('video', f);
+      const r = await fetch(API + '/upload', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token() },
+        body: fd
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      setStatus('Файл загружен: ' + sizeMb + ' МБ');
+      if (data.rec) renderRow(data.rec);
+      else await loadVideos();
+    } catch (e) { setStatus(e.message); }
+    ev.target.value = '';
+  });
+
+  // Telegram: развернуть на весь экран
+  try { if (window.Telegram && window.Telegram.WebApp) { window.Telegram.WebApp.ready(); window.Telegram.WebApp.expand(); } } catch (e) {}
+
+  // Старт: подтянуть список с сервера
+  loadVideos();
+  loadAccounts();
+</script>
+
+<!-- ── Окно подключения аккаунта ── -->
+<div id="connectModal" style="display:none;position:fixed;inset:0;background:rgba(3,4,8,.72);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;padding:1rem">
+  <div style="width:100%;max-width:420px;background:linear-gradient(180deg,var(--panel-2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:1.5rem 1.3rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem">
+      <div style="font-size:1.02rem;font-weight:700">Подключить аккаунт</div>
+      <button onclick="closeConnect()" style="background:transparent;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;font-family:var(--font)">✕</button>
+    </div>
+
+    <div id="svcList"></div>
+    <div id="connectStatus" style="text-align:center;font-size:.8rem;color:var(--neon-2);min-height:1.2rem;margin-top:.8rem"></div>
+  </div>
+</div>
+
+<script>
+  const SERVICES = [
+    { id:'telegram', name:'Telegram', color:'#2AABEE', ready:true, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path d="M5.5 11.8l10.2-4.3c.5-.2.9.1.8.7l-1.7 8.1c-.1.6-.5.7-1 .4l-2.7-2-1.3 1.3c-.2.2-.3.3-.6.3l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1l-6.4 4-2.6-.8c-.6-.2-.6-.6.2-.8z" fill="#fff"/></svg>' },
+    { id:'instagram', name:'Instagram', color:'#E1306C', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.4" fill="#E1306C"/></svg>' },
+    { id:'facebook', name:'Facebook', color:'#1877F2', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M15.5 12.6h-2.2V19h-2.7v-6.4H9v-2.3h1.6V8.9c0-1.7 1-2.9 2.8-2.9.8 0 1.5.1 1.7.1v2h-1.2c-.9 0-1.1.5-1.1 1.1v1.1h2.3l-.6 2.3z" fill="#fff"/></svg>' },
+    { id:'vk', name:'VK', color:'#0077FF', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#0077FF"/><path d="M12.9 16.2c-4.1 0-6.6-2.9-6.7-7.6h2c.1 3.5 1.7 5 2.9 5.3V8.6h1.9v2.8c1.2-.1 2.4-1.4 2.8-2.8h1.9c-.3 1.7-1.5 3-2.4 3.5 1 .4 2.3 1.6 2.8 3.5h-2.1c-.4-1.3-1.5-2.3-2.8-2.4v2.4h-.3z" fill="#fff"/></svg>' },
+    { id:'youtube', name:'YouTube', color:'#FF0000', ready:false, icon:'<svg viewBox="0 0 24 24" width="24" height="24"><rect x="1.5" y="4" width="21" height="16" rx="4.5" fill="#FF0000"/><path d="M10 8.8l5.5 3.2L10 15.2V8.8z" fill="#fff"/></svg>' },
+  ];
+
+  function openConnect() {
+    document.getElementById('connectStatus').textContent = '';
+    const box = document.getElementById('svcList');
+    box.innerHTML = SERVICES.map(s => `
+      <div style="display:flex;align-items:center;gap:.7rem;padding:.7rem .75rem;border:1px solid var(--line);border-radius:12px;margin-bottom:.5rem;background:rgba(255,255,255,.012)">
+        <span style="width:34px;height:34px;display:grid;place-items:center;flex:none">${s.icon}</span>
+        <span style="flex:1;font-size:.88rem;font-weight:600">${s.name}</span>
+        ${
+          s.ready
+          ? `<button class="btn btn-neon" style="font-size:.72rem;padding:.4rem .85rem" onclick="connectService('${s.id}')">Подключить</button>`
+          : `<span class="badge" style="color:var(--muted)">в разработке</span>`
+        }
+      </div>`).join('');
+    document.getElementById('connectModal').style.display = 'flex';
+  }
+  function closeConnect() { document.getElementById('connectModal').style.display = 'none'; }
+
+  async function connectService(id) {
+    if (id === 'telegram') {
+      const st = document.getElementById('connectStatus');
+      // свой ввод вместо браузерного prompt()
+      document.getElementById('svcList').innerHTML = `
+        <div style="margin-bottom:.7rem;font-size:.84rem;color:var(--muted)">Укажите канал Telegram</div>
+        <input id="tgInput" type="text" placeholder="@канал или https://t.me/…"
+          style="width:100%;padding:.72rem .85rem;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line);color:var(--text);font-family:var(--font);font-size:.88rem;outline:none">
+        <div style="display:flex;gap:.5rem;margin-top:.8rem">
+          <button class="btn btn-neon" style="flex:1" onclick="submitTelegram()">Подключить</button>
+        </div>`;
+      st.textContent = '';
+      setTimeout(() => { const i = document.getElementById('tgInput'); if (i) { i.focus(); i.addEventListener('keydown', e => { if (e.key === 'Enter') submitTelegram(); }); } }, 50);
+      return;
+    }
+  }
+
+  async function submitTelegram() {
+    const st = document.getElementById('connectStatus');
+    const inp = document.getElementById('tgInput');
+    const ch = (inp && inp.value || '').trim();
+    if (!ch) { st.textContent = 'Введите канал'; return; }
+    st.textContent = 'Подключаю…';
+    try {
+      const r = await fetch(API + '/connect/telegram', {
+        method: 'POST',
+        headers: authH(),
+        body: JSON.stringify({ channel: ch })
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      st.textContent = 'Канал подключён: ' + data.username;
+      closeConnect();
+      loadAccounts();
+    } catch (e) { st.textContent = e.message; }
+  }
+
+  async function loadAccounts() {
+    try {
+      const r = await fetch(API + '/accounts', { headers: authH() });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Ошибка');
+      const list = document.getElementById('accList');
+      if (!data.accounts.length) {
+        list.innerHTML = '<div class="empty"><div class="ic">🔗</div><p>Аккаунты не подключены</p><small>Подключите Instagram, Facebook, VK или Telegram</small></div>';
+        return;
+      }
+      list.innerHTML = data.accounts.map(a => {
+        const svc = SERVICES.find(s => s.id === a.service) || { name:a.service, icon:'' };
+        return `<div class="sched-row"><div class="acc"><span class="ic">${svc.icon || ''}</span> ${a.username}</div>` +
+               `<span class="badge on">подключено</span><span class="time">${svc.name}</span></div>`;
+      }).join('');
+    } catch (e) {}
+  }
+</script>
+
+</body>
+</html>
