@@ -283,6 +283,25 @@
   .ctype p.csub { font-size:.7rem; opacity:.75; margin-top:.4rem; transform:translateZ(8px); }
   .ctype .ctag { display:inline-block; margin-top:.6rem; font-size:.66rem; font-weight:600; color:var(--neon-2);
     border:1px solid rgba(47,123,255,.4); background:var(--neon-soft); border-radius:100px; padding:.14rem .55rem; }
+  /* ── ЗАЧЕМ НУЖНА УНИКАЛИЗАЦИЯ ── */
+  .why { max-width:640px; margin:3.4rem auto 0; }
+  .why-lead { color:var(--muted); font-size:.94rem; line-height:1.65; text-align:center; margin-bottom:1.8rem; }
+  .why-lead b { color:var(--text); }
+  .why-flow { display:flex; flex-direction:column; align-items:center; }
+  .ws { text-align:center; width:100%; }
+  .ws-t { font-size:1.05rem; font-weight:700; line-height:1.45; }
+  .ws-d { font-size:.82rem; color:var(--muted); line-height:1.5; margin-top:.25rem; }
+  .ws-v { margin-top:.5rem; font-size:.95rem; font-weight:700; color:var(--text); }
+  .ws-v b { color:#fff; }
+  .warr { margin:.7rem 0; width:14px; height:40px; position:relative; }
+  .warr:before { content:""; position:absolute; left:50%; top:0; transform:translateX(-50%); width:2px; height:28px; background:rgba(255,255,255,.85); border-radius:2px; }
+  .warr:after { content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%); border-left:6px solid transparent; border-right:6px solid transparent; border-top:10px solid rgba(255,255,255,.95); }
+  .why-total { text-align:center; margin-top:1.8rem; padding:1.2rem 1.4rem; border-radius:18px;
+    border:1px solid rgba(47,123,255,.5); background:linear-gradient(160deg, rgba(47,123,255,.12), rgba(10,14,21,.96));
+    box-shadow:0 28px 60px -34px rgba(47,123,255,.7); font-size:1.35rem; font-weight:800; letter-spacing:-.02em; }
+  .why-total em { font-style:normal; color:var(--neon-2); }
+  @media (max-width:520px){ .ws-t{font-size:.98rem} .why-total{font-size:1.1rem} }
+
   .flow-title { display:flex; align-items:center; gap:1rem; text-align:center; font-size:.74rem; text-transform:uppercase; letter-spacing:.16em; color:var(--muted); margin-bottom:2rem; }
   .flow-title:before, .flow-title:after { content:""; flex:1; height:1px; background:var(--line); }
   .flow-title b { color:var(--text); }
@@ -411,6 +430,42 @@
     </div>
     <div class="ring-cap">Публикуем в <b>ваши аккаунты</b> — 7 площадок</div>
     <div class="ring-legal">Все логотипы принадлежат их владельцам. Uniqpost — независимый сервис публикации.</div>
+
+  <!-- ───────────────── ЗАЧЕМ НУЖНА УНИКАЛИЗАЦИЯ ───────────────── -->
+  <div class="why" id="why">
+    <div class="flow-title"><span>ЗАЧЕМ НУЖНА <b>УНИКАЛИЗАЦИЯ</b></span></div>
+    <div class="why-lead">
+      Одна и та же запись при повторной публикации теряет охват — соцсеть видит в ней <b>дубль</b>.
+      Уникализация меняет видео так, что для алгоритма это <b>новый ролик</b>. Охват возвращается.
+    </div>
+
+    <div class="why-flow">
+      <div class="ws">
+        <div class="ws-t">Выставили рилс</div>
+        <div class="ws-v">👁 <b>200</b> просмотров</div>
+      </div>
+      <div class="warr"></div>
+      <div class="ws">
+        <div class="ws-t">Выставили его же снова</div>
+        <div class="ws-d">Соцсеть видит дубль — почти не показывает</div>
+        <div class="ws-v">👁 <b>0</b> просмотров</div>
+      </div>
+      <div class="warr"></div>
+      <div class="ws">
+        <div class="ws-t">Уникализировали — выставили снова</div>
+        <div class="ws-d">Для алгоритма это уже новое видео</div>
+        <div class="ws-v">👁 <b>+500</b> просмотров</div>
+      </div>
+      <div class="warr"></div>
+      <div class="ws">
+        <div class="ws-t">Уникализировали ещё раз</div>
+        <div class="ws-d">Из одного ролика — до 5 версий</div>
+        <div class="ws-v">👁 <b>+500</b> просмотров</div>
+      </div>
+    </div>
+
+    <div class="why-total">Один ролик → <em>до 5 версий</em> → охват заново</div>
+  </div>
 
   <div class="flow" id="how">
     <div class="flow-title"><span>КАК ЭТО РАБОТАЕТ — <b>5 шагов</b></span></div>

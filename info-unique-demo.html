@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniqpost — Что такое уникализация (превью)</title>
+<style>
+  :root{
+    --bg:#07080c; --panel:#0c0f16; --panel-2:#10141d;
+    --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --ok:#4fd08a; --bad:#ff6b6b;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);}
+  .wrap{max-width:1000px;margin:0 auto;padding:2.4rem 1.2rem 4rem}
+
+  .nav{display:flex;align-items:center;gap:.6rem;margin-bottom:2rem}
+  .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--neon);
+    box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.65;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+
+  .sec{display:flex;align-items:center;gap:1rem;text-transform:uppercase;font-size:.74rem;
+    letter-spacing:.16em;color:var(--muted);margin:0 0 1rem}
+  .sec:before,.sec:after{content:"";flex:1;height:1px;background:var(--line)}
+  .sec b{color:var(--text)}
+  .lead{text-align:center;color:var(--muted);font-size:.92rem;line-height:1.6;max-width:620px;margin:0 auto 2.4rem}
+  .lead b{color:var(--text)}
+
+  /* ── Инфографика: шаги ── */
+  .infog{display:flex;flex-direction:column;gap:.2rem}
+  .irow{
+    display:grid;grid-template-columns:64px 1fr;gap:1rem;align-items:stretch;
+    border:1px solid var(--line);border-radius:16px;padding:1.1rem 1.3rem;
+    background:linear-gradient(160deg, rgba(20,26,38,.96), rgba(10,14,21,.96));
+    box-shadow:0 -1px 0 rgba(255,255,255,.03) inset, 0 20px 50px -34px rgba(0,0,0,.9);
+    position:relative;
+  }
+  .irow.bad{opacity:.72}
+  .irow .num{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+    font-weight:800;font-size:1rem;flex:none;
+    background:var(--neon-soft);border:1px solid var(--line);color:var(--neon-2)}
+  .irow.bad .num{background:rgba(255,107,107,.1);border-color:rgba(255,107,107,.3);color:var(--bad)}
+  .irow.good .num{background:rgba(79,208,138,.12);border-color:rgba(79,208,138,.3);color:var(--ok)}
+  .irow .body{min-width:0}
+  .irow h3{font-size:1.02rem;font-weight:700;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .irow p{color:var(--muted);font-size:.84rem;line-height:1.55}
+  .views{
+    display:inline-flex;align-items:center;gap:.4rem;font-weight:800;font-size:1.05rem;
+    margin-top:.6rem;padding:.35rem .85rem;border-radius:100px;
+    border:1px solid rgba(79,208,138,.35);background:rgba(79,208,138,.1);color:var(--ok);
+  }
+  .views.zero{border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.08);color:var(--bad)}
+  .views b{font-size:.72rem;font-weight:600;color:var(--muted);letter-spacing:.04em}
+  .chip{display:inline-block;font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:.14rem .5rem;border-radius:100px;border:1px solid var(--line)}
+  .chip.lock{color:var(--bad);border-color:rgba(255,107,107,.35);background:rgba(255,107,107,.08)}
+  .chip.fresh{color:var(--neon-2);border-color:rgba(47,123,255,.4);background:var(--neon-soft)}
+
+  /* стрелка между шагами */
+  .arrow{display:flex;justify-content:center;padding:.35rem 0}
+  .arrow span{width:2px;height:26px;background:linear-gradient(180deg,var(--neon),rgba(47,123,255,.15));
+    position:relative;border-radius:2px}
+  .arrow span:after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+    border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--neon)}
+
+  /* Итоговая плашка */
+  .total{margin-top:1.6rem;border:1px solid rgba(47,123,255,.5);border-radius:18px;
+    padding:1.4rem 1.6rem;text-align:center;
+    background:linear-gradient(160deg, rgba(47,123,255,.12), rgba(10,14,21,.96));
+    box-shadow:0 28px 60px -34px rgba(47,123,255,.7)}
+  .total .big{font-size:1.9rem;font-weight:800;letter-spacing:-.02em}
+  .total .big em{font-style:normal;color:var(--neon-2)}
+  .total .sub{color:var(--muted);font-size:.84rem;margin-top:.4rem;line-height:1.5}
+
+  @media (max-width:640px){
+    .irow{grid-template-columns:1fr;gap:.7rem;padding:1rem}
+    .irow .num{width:38px;height:38px}
+    .total .big{font-size:1.55rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav"><div class="brand"><span class="dot"></span> Uniqpost</div></div>
+
+  <div class="sec"><span>ЧТО ТАКОЕ <b>УНИКАЛИЗАЦИЯ ВИДЕО</b></span></div>
+  <div class="lead">
+    Одна и та же запись во второй раз получает <b>в разы меньше охвата</b> — соцсети считают её дублем.
+    Уникализация меняет видео так, что для алгоритма это <b>новый ролик</b>. И охват возвращается.
+  </div>
+
+  <div class="infog">
+
+    <div class="irow">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>Выставили рилс <span class="chip fresh">первая публикация</span></h3>
+        <p>Загрузили видео в соцсеть в первый раз. Алгоритм видит новый контент и показывает его людям.</p>
+        <div class="views">👁 200 просмотров</div>
+      </div>
+    </div>
+
+    <div class="arrow"><span></span></div>
+
+    <div class="irow bad">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>Выставили тот же ролик снова <span class="chip lock">дубль</span></h3>
+        <p>Соцсеть распознаёт повтор и почти не показывает его. Охвата нет — видео «сгорело».</p>
+        <div class="views zero">👁 0 просмотров</div>
+      </div>
+    </div>
+
+    <div class="arrow"><span></span></div>
+
+    <div class="irow good">
+      <div class="num">3</div>
+      <div class="body">
+        <h3>Уникализировали — выставили снова <span class="chip fresh">новый ролик</span></h3>
+        <p>Меняем метаданные, скорость, цвет, шум и звук. Для алгоритма это уже другое видео — он снова его продвигает.</p>
+        <div class="views">👁 +500 просмотров</div>
+      </div>
+    </div>
+
+    <div class="arrow"><span></span></div>
+
+    <div class="irow good">
+      <div class="num">4</div>
+      <div class="body">
+        <h3>Уникализировали ещё раз <span class="chip fresh">и ещё</span></h3>
+        <p>Из одного ролика делаем до 5 версий. Каждая — «новая» для соцсети и получает свой охват.</p>
+        <div class="views">👁 +500 просмотров</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="total">
+    <div class="big">Один ролик → <em>до 5 версий</em> → охват заново</div>
+    <div class="sub">Вместо 200 просмотров с одного ролика — до <b>2000+</b> с тех же кадров.<br>Uniqpost делает это сам: загрузил один раз — публикует версии везде и по расписанию.</div>
+  </div>
+
+</div>
+</body>
+</html>

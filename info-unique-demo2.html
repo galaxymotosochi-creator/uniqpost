@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniqpost — Зачем уникализация (превью 2)</title>
+<style>
+  :root{
+    --bg:#07080c; --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --ok:#4fd08a; --bad:#ff6b6b;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);}
+  .wrap{max-width:760px;margin:0 auto;padding:2.4rem 1.2rem 4rem}
+
+  .nav{display:flex;align-items:center;gap:.6rem;margin-bottom:2rem}
+  .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--neon);
+    box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.65;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+
+  .sec{display:flex;align-items:center;gap:1rem;text-transform:uppercase;font-size:.74rem;
+    letter-spacing:.16em;color:var(--muted);margin:0 0 1.1rem;text-align:center}
+  .sec:before,.sec:after{content:"";flex:1;height:1px;background:var(--line)}
+  .sec b{color:var(--text)}
+
+  .lead{color:var(--muted);font-size:.95rem;line-height:1.65;text-align:center;margin-bottom:2rem}
+  .lead b{color:var(--text)}
+
+  /* ── Поток текста со стрелочками ── */
+  .flow2{display:flex;flex-direction:column;align-items:center;gap:0}
+  .fstep{width:100%;text-align:center;padding:.55rem 0}
+  .fstep .t{font-size:1.02rem;font-weight:700;line-height:1.4}
+  .fstep .t small{display:block;font-size:.82rem;font-weight:500;color:var(--muted);margin-top:.25rem;line-height:1.5}
+  .fstep .v{display:inline-flex;align-items:center;gap:.4rem;margin-top:.45rem;
+    font-weight:800;font-size:1.02rem;padding:.28rem .8rem;border-radius:100px}
+  .fstep .v.ok{border:1px solid rgba(79,208,138,.35);background:rgba(79,208,138,.1);color:var(--ok)}
+  .fstep .v.zero{border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.08);color:var(--bad)}
+  .fstep.dim{opacity:.68}
+
+  .arr{width:2px;height:30px;background:linear-gradient(180deg,var(--neon),rgba(47,123,255,.15));
+    position:relative;border-radius:2px}
+  .arr:after{content:"";position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);
+    border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--neon)}
+  .arr.red{background:linear-gradient(180deg,var(--bad),rgba(255,107,107,.15))}
+  .arr.red:after{border-top-color:var(--bad)}
+
+  .divider{display:flex;align-items:center;gap:1rem;width:100%;margin:1.6rem 0 1.4rem;color:var(--muted);font-size:.72rem;
+    text-transform:uppercase;letter-spacing:.14em}
+  .divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--line)}
+
+  .total{text-align:center;margin-top:1.8rem;padding:1.3rem 1.4rem;border-radius:18px;
+    border:1px solid rgba(47,123,255,.5);
+    background:linear-gradient(160deg, rgba(47,123,255,.12), rgba(10,14,21,.96));
+    box-shadow:0 28px 60px -34px rgba(47,123,255,.7)}
+  .total .big{font-size:1.45rem;font-weight:800;letter-spacing:-.02em}
+  .total .big em{font-style:normal;color:var(--neon-2)}
+  .total .sub{color:var(--muted);font-size:.84rem;margin-top:.45rem;line-height:1.55}
+  .total .sub b{color:var(--text)}
+
+  @media (max-width:520px){
+    .fstep .t{font-size:.95rem}
+    .total .big{font-size:1.2rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav"><div class="brand"><span class="dot"></span> Uniqpost</div></div>
+
+  <div class="sec"><span>ЗАЧЕМ НУЖНА <b>УНИКАЛИЗАЦИЯ</b></span></div>
+  <div class="lead">
+    Одна и та же запись при повторной публикации теряет охват — соцсеть видит в ней <b>дубль</b>.
+    Уникализация меняет видео так, что для алгоритма это <b>новый ролик</b>. Охват возвращается.
+  </div>
+
+  <div class="flow2">
+
+    <div class="fstep">
+      <div class="t">Выставили рилс</div>
+      <div class="v ok">👁 200 просмотров</div>
+    </div>
+
+    <div class="arr red"></div>
+
+    <div class="fstep dim">
+      <div class="t">Выставили его же снова
+        <small>Соцсеть видит дубль — почти не показывает</small>
+      </div>
+      <div class="v zero">👁 0 просмотров</div>
+    </div>
+
+    <div class="arr"></div>
+
+    <div class="fstep">
+      <div class="t">Уникализировали — выставили снова
+        <small>Для алгоритма это уже новое видео</small>
+      </div>
+      <div class="v ok">👁 +500 просмотров</div>
+    </div>
+
+    <div class="arr"></div>
+
+    <div class="fstep">
+      <div class="t">Уникализировали ещё раз
+        <small>Из одного ролика — до 5 версий</small>
+      </div>
+      <div class="v ok">👁 +500 просмотров</div>
+    </div>
+
+  </div>
+
+  <div class="total">
+    <div class="big">Один ролик → <em>до 5 версий</em> → охват заново</div>
+    <div class="sub">Видео не «сгорает» после первой публикации. Uniqpost делает версии и публикует их сам — по расписанию во все соцсети.</div>
+  </div>
+
+</div>
+</body>
+</html>
