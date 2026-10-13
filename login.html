@@ -139,14 +139,33 @@
     else { msg.className = 'msg err'; msg.textContent = d.error || 'Не удалось войти через Telegram'; }
   }
 
-  document.getElementById('tgBtn').addEventListener('click', () => {
+  document.getElementById('tgBtn').addEventListener('click', async () => {
     const tg = window.Telegram && window.Telegram.WebApp;
     // Внутри Telegram — тихий вход по initData
     if (tg && tg.initData) { tgLogin(tg.initData); return; }
-    // В браузере — открываем бота для подтверждения
-    window.open('https://t.me/' + TG_BOT + '?start=login', '_blank');
-    msg.className = 'msg'; msg.style.color = 'var(--muted)';
-    msg.textContent = 'Откройте Telegram и нажмите «Старт» в боте — вход выполнится автоматически.';
+
+    // В браузере — Способ 1: получаем код, отправляем человека в бота, ждём подтверждения
+    try {
+      btn.disabled = true;
+      const r = await fetch(API_URL + '/tg-login/start', { method: 'POST' });
+      const d = await r.json();
+      if (!r.ok || !d.ok) { msg.className = 'msg err'; msg.textContent = 'Не удалось начать вход'; btn.disabled = false; return; }
+      localStorage.setItem('uniqpost_tg_code', d.code);
+      window.open('https://t.me/' + (d.bot || TG_BOT) + '?start=login_' + d.code, '_blank');
+      msg.className = 'msg'; msg.style.color = 'var(--muted)';
+      msg.textContent = 'Открыли Telegram — нажмите «Старт» в боте. Ждём подтверждение…';
+      // опрашиваем статус раз в 2 сек до 10 минут
+      let tries = 0;
+      const poll = setInterval(async () => {
+        tries++;
+        try {
+          const s = await fetch(API_URL + '/tg-login/status?code=' + encodeURIComponent(d.code));
+          const sd = await s.json();
+          if (sd.status === 'confirmed') { clearInterval(poll); finishTgLogin(sd); }
+          else if (sd.status === 'expired' || tries > 300) { clearInterval(poll); msg.className='msg err'; msg.textContent='Время входа истекло. Попробуйте снова.'; btn.disabled=false; }
+        } catch {}
+      }, 2000);
+    } catch (e) { msg.className='msg err'; msg.textContent='Нет связи с сервером'; btn.disabled=false; }
   });
 
   // Автовход, если открыто внутри Telegram
