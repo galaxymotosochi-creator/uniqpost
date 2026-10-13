@@ -301,11 +301,11 @@
 
   /* ── ТАРИФЫ — карусель карточек ── */
   .pland-note{color:var(--muted);font-size:.82rem;text-align:center;margin:-1rem 0 1.4rem;line-height:1.5}
-  .fx-carousel .rail{display:flex;gap:.9rem;overflow-x:auto;scroll-snap-type:x mandatory;
-    padding:1.4rem .2rem 1.1rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .fx-carousel .rail{display:flex;gap:.9rem;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;
+    padding:1.6rem .8rem 1.3rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .fx-carousel .rail::-webkit-scrollbar{display:none}
   .fx-carousel .pcard{flex:0 0 240px;min-height:540px;scroll-snap-align:center;padding:1.9rem 1.4rem;
-    display:flex;flex-direction:column;justify-content:flex-start;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:flex-start;position:relative;overflow:visible;
     border:1px solid var(--line);border-radius:20px;
     background:linear-gradient(160deg, rgba(20,26,38,.98), rgba(10,14,21,.98));
     box-shadow:0 -1px 0 rgba(255,255,255,.03) inset, 0 30px 70px -40px rgba(0,0,0,.95)}
@@ -329,7 +329,7 @@
   .fx-carousel .pcard .chk{color:var(--neon-2);font-weight:700;flex:none}
   .fx-carousel .pcard.best{border-color:rgba(47,123,255,.55);
     box-shadow:0 28px 60px -34px rgba(47,123,255,.8),0 0 0 1px rgba(47,123,255,.12) inset}
-  .fx-carousel .pcard .tag{position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  .fx-carousel .pcard .tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);z-index:5;
     font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;
     background:linear-gradient(135deg,#2f7bff,#1b5fd6);border-radius:100px;padding:.2rem .7rem;
     box-shadow:0 8px 20px -8px rgba(47,123,255,.9);white-space:nowrap}
