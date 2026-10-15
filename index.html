@@ -267,22 +267,25 @@
 
 
   /* ── 3D-карточки типов контента ── */
-  .ctypes { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:2.4rem auto 0; max-width:900px; perspective:1100px; }
+  .ctypes { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:2.4rem auto 0; max-width:900px; }
   .ctype {
-    position:relative; text-align:center; padding:1.5rem 1rem 1.3rem; border-radius:18px;
-    border:1px solid var(--line); background:linear-gradient(180deg,var(--panel-2),var(--panel));
-    transform:rotateX(8deg); transform-style:preserve-3d;
-    transition:transform .35s ease, border-color .35s, box-shadow .35s;
-    box-shadow:0 22px 44px -26px rgba(0,0,0,.9);
+    position:relative; border-radius:20px; padding:1.5rem 1.3rem 1.3rem; overflow:hidden;
+    border:1px solid var(--line);
+    background:linear-gradient(165deg, rgba(47,123,255,.14), rgba(10,14,21,.96));
+    transition:transform .3s ease, border-color .3s, box-shadow .3s;
+    box-shadow:0 22px 44px -30px rgba(0,0,0,.9);
   }
-  .ctype:hover { transform:rotateX(0deg) translateY(-8px) scale(1.03); border-color:rgba(47,123,255,.55);
-    box-shadow:0 30px 60px -22px rgba(47,123,255,.55); }
-  .ctype .cico { font-size:1.9rem; transform:translateZ(30px); }
-  .ctype h4 { font-size:.95rem; margin:.6rem 0 .3rem; transform:translateZ(20px); }
-  .ctype p { font-size:.76rem; color:var(--muted); line-height:1.5; transform:translateZ(10px); }
-  .ctype p.csub { font-size:.7rem; opacity:.75; margin-top:.4rem; transform:translateZ(8px); }
-  .ctype .ctag { display:inline-block; margin-top:.6rem; font-size:.66rem; font-weight:600; color:var(--neon-2);
-    border:1px solid rgba(47,123,255,.4); background:var(--neon-soft); border-radius:100px; padding:.14rem .55rem; }
+  .ctype:hover { transform:translateY(-6px); border-color:rgba(47,123,255,.55);
+    box-shadow:0 34px 64px -30px rgba(47,123,255,.7); }
+  .ctype .ctag { display:inline-flex; align-items:center; gap:.35rem; font-size:.66rem; font-weight:700;
+    padding:.22rem .6rem; border-radius:100px; background:rgba(47,123,255,.2);
+    border:1px solid rgba(47,123,255,.45); color:#fff; margin-bottom:.9rem; letter-spacing:.04em; }
+  .ctype .cico { font-size:2rem; display:block; margin-bottom:.5rem;
+    filter:drop-shadow(0 6px 16px rgba(47,123,255,.8)); }
+  .ctype h4 { font-size:1.08rem; font-weight:800; margin-bottom:.45rem; }
+  .ctype p { font-size:.81rem; color:rgba(232,236,244,.72); line-height:1.55; }
+  .ctype .cfoot { margin-top:1rem; font-size:.68rem; color:var(--muted);
+    border-top:1px solid var(--line); padding-top:.7rem; }
   .why { max-width:760px; margin:3.4rem auto 0; }
   .why-lead { color:var(--muted); font-size:.94rem; line-height:1.65; text-align:center; margin-bottom:1rem; }
   .why-lead b { color:var(--text); }
@@ -369,11 +372,11 @@
     .nav { padding:.85rem 1rem; gap:.8rem; }
   }
   /* ── ЗАЧЕМ НУЖНА УНИКАЛИЗАЦИЯ (веер карточек) ── */
-  .fan-stage{position:relative;height:520px;display:flex;align-items:flex-end;justify-content:center;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;-webkit-touch-callout:none}
+  .fan-stage{position:relative;height:580px;display:flex;align-items:flex-end;justify-content:center;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;-webkit-touch-callout:none}
   .fan-stage:active{cursor:grabbing}
   .fan-layout{position:relative;width:100%;max-width:60rem;height:100%;display:flex;justify-content:center;align-items:center}
   .fan-card{
-    position:absolute;top:50%;left:50%;width:16rem;height:25rem;margin:-12.5rem 0 0 -8rem;
+    position:absolute;top:50%;left:50%;width:16.5rem;height:29rem;margin:-14.5rem 0 0 -8.25rem;
     border-radius:20px;overflow:hidden;cursor:grab;will-change:transform;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;touch-action:none;
     border:1px solid var(--line);
     box-shadow:0 30px 60px -30px rgba(0,0,0,.95), 0 -1px 0 rgba(255,255,255,.04) inset;
@@ -408,15 +411,15 @@
   .dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
   .dots span.on{background:rgba(88,166,255,.9);transform:scale(1.3)}
   @media (max-width:768px){
-    .fan-stage{height:460px}
-    .fan-card{width:13rem;height:20.5rem;margin:-10.25rem 0 0 -6.5rem}
+    .fan-stage{height:520px}
+    .fan-card{width:13.5rem;height:23.5rem;margin:-11.75rem 0 0 -6.75rem}
     .fan-card .fc-title{font-size:.92rem}
     .fan-card .fc-views{font-size:1rem}
     .fan-card .fc-views small{font-size:.6rem}
   }
   @media (max-width:480px){
-    .fan-stage{height:420px}
-    .fan-card{width:10.4rem;height:16.4rem;margin:-8.2rem 0 0 -5.2rem}
+    .fan-stage{height:460px}
+    .fan-card{width:10.8rem;height:18.4rem;margin:-9.2rem 0 0 -5.4rem}
     .fan-card .fc-play{width:44px;height:44px;font-size:.95rem}
     .fan-card .fc-title{font-size:.8rem}
     .fan-card .fc-sub{font-size:.68rem}
@@ -561,64 +564,28 @@
   <div class="ctypes-title"><span>ОДИН СЕРВИС — <b>ЛЮБОЙ КОНТЕНТ</b></span></div>
   <div class="ctypes">
     <div class="ctype">
-      <div class="cico">🎬</div>
-      <h4>Видео</h4>
-      <p>Один ролик → 5 уникальных версий. Загружай одно видео снова и снова — без банов за дубли</p>
-      <p class="csub">Меняем: метаданные, скорость, цвет, шум, звук</p>
+      <span class="ctag">🎬 ВИДЕО</span>
+      <span class="cico">🎬</span>
+      <h4>Уникализация видео</h4>
+      <p>Один ролик → 5 уникальных версий. Алгоритм видит новое видео — охват возвращается.</p>
+      <div class="cfoot">Метаданные · скорость · цвет · шум · звук</div>
     </div>
     <div class="ctype">
-      <div class="cico">🖼️</div>
+      <span class="ctag">🖼️ ФОТО</span>
+      <span class="cico">🖼️</span>
       <h4>Изображения</h4>
-      <p>Публикуй одно фото повторно — свежие версии получают охват заново</p>
-      <p class="csub">Меняем: кроп, цвет, детали, метаданные</p>
+      <p>Публикуй одно фото повторно — свежие версии получают охват заново.</p>
+      <div class="cfoot">Кроп · цвет · детали · метаданные</div>
     </div>
     <div class="ctype">
-      <div class="cico">📝</div>
-      <h4>Текст</h4>
-      <p>ИИ-помощник пишет посты в вашем стиле — на основе ваших прошлых публикаций</p>
-      <p class="csub">Готовые варианты: одобрить, поправить или сгенерировать заново</p>
+      <span class="ctag">📝 ТЕКСТ</span>
+      <span class="cico">📝</span>
+      <h4>ИИ-тексты</h4>
+      <p>Помощник пишет посты в вашем стиле на основе прошлых публикаций.</p>
+      <div class="cfoot">Одобрить · поправить · сгенерировать</div>
     </div>
   </div>
 
-  <div class="sep"><span>Личный кабинет</span></div>
-
-  <!-- ───────────────── КАБИНЕТ ───────────────── -->
-  <div class="head">
-    <div>
-      <h1>Обзор</h1>
-      <p>Ваши публикации и очередь на сегодня</p>
-    </div>
-    <button class="btn btn-neon" style="width:auto;padding:.7rem 1.3rem">+ Добавить контент</button>
-  </div>
-
-  <div class="stats">
-    <div class="stat"><span class="ico">🔗</span><div class="lbl">Аккаунтов</div><div class="val"><em>7</em></div><div class="sub">Instagram ×4, VK, FB, TG</div></div>
-    <div class="stat"><span class="ico">🎬</span><div class="lbl">Контент за месяц</div><div class="val">128</div><div class="sub">уникализировано</div></div>
-    <div class="stat"><span class="ico">🚀</span><div class="lbl">Публикаций</div><div class="val">412</div><div class="sub">успешно отправлено</div></div>
-    <div class="stat"><span class="ico">🕒</span><div class="lbl">В очереди</div><div class="val"><em>3</em></div><div class="sub">ближайшая — 18:30</div></div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <h2><span class="tick"></span> Мои аккаунты <span class="cnt">5 из 7</span></h2>
-      <div class="sched">
-        <div class="sched-row"><div class="acc"><span class="ic">📷</span> @brand.main</div><span class="badge on">подключено</span><span class="time">Instagram</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">📷</span> @brand.shop</div><span class="badge on">подключено</span><span class="time">Instagram</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">📘</span> Facebook · Brand</div><span class="badge on">подключено</span><span class="time">Facebook</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">🅥</span> VK · Brand</div><span class="badge on">подключено</span><span class="time">VK</span></div>
-        <div class="sched-row"><div class="acc"><span class="ic">✈️</span> @channel</div><span class="badge">не подключено</span><span class="time">Telegram</span></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2><span class="tick"></span> Ближайшие публикации <span class="cnt">сегодня</span></h2>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">reel_summer_01</div><div class="s">Instagram ×2, VK</div></div><span class="pill wait">18:30</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">tiktok_0891</div><div class="s">Instagram ×1</div></div><span class="pill wait">19:45</span></div>
-      <div class="qitem"><div class="thumb">▶</div><div class="qmeta"><div class="t">promo_reel</div><div class="s">Facebook, VK</div></div><span class="pill wait">21:00</span></div>
-    </div>
-  </div>
-
-  <!-- ───────────────── ТАРИФЫ ───────────────── -->
   <div class="ctypes-title" id="pricing" style="margin-top:3rem"><span>ТАРИФЫ — <b>ПАКЕТЫ КРЕДИТОВ</b></span></div>
   <div class="fx-carousel"><div class="rail">
 

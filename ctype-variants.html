@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniqpost — варианты карточек контента</title>
+<style>
+  :root{
+    --bg:#07080c; --panel:#0c0f16; --panel-2:#10141d;
+    --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --neon-soft:rgba(47,123,255,.14); --text:#e8ecf4; --muted:#7c8699;
+    --ok:#4fd08a;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);}
+  .wrap{max-width:960px;margin:0 auto;padding:2.2rem 1.1rem 4rem}
+  .nav{display:flex;align-items:center;gap:.6rem;margin-bottom:1.4rem}
+  .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--neon);
+    box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.65;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+  .sec{display:flex;align-items:center;gap:1rem;text-transform:uppercase;font-size:.72rem;
+    letter-spacing:.16em;color:var(--muted);margin:0 0 1.2rem}
+  .sec:before,.sec:after{content:"";flex:1;height:1px;background:var(--line)}
+  .sec b{color:var(--text)}
+  .sec.mt{margin-top:3rem}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:0 auto;max-width:860px}
+
+  /* ══ ВАРИАНТ A — «Номер + иконка в стекле» ══ */
+  .va{position:relative;border:1px solid var(--line);border-radius:20px;padding:1.4rem 1.2rem 1.3rem;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));overflow:hidden;
+    transition:transform .3s, border-color .3s, box-shadow .3s}
+  .va:hover{transform:translateY(-6px);border-color:rgba(47,123,255,.5);box-shadow:0 30px 60px -30px rgba(47,123,255,.6)}
+  .va:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(47,123,255,.6),transparent)}
+  .va .num{font-size:.64rem;font-weight:800;letter-spacing:.2em;color:var(--neon-2)}
+  .va .icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;
+    background:rgba(47,123,255,.12);border:1px solid rgba(47,123,255,.3);margin:.8rem 0 .9rem;
+    box-shadow:0 8px 24px -10px rgba(47,123,255,.7)}
+  .va h4{font-size:1.02rem;font-weight:800;margin-bottom:.4rem}
+  .va p{font-size:.8rem;color:var(--muted);line-height:1.55}
+  .va .row{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.85rem}
+  .va .row span{font-size:.62rem;font-weight:600;color:var(--neon-2);border:1px solid rgba(47,123,255,.4);
+    background:var(--neon-soft);border-radius:100px;padding:.16rem .5rem}
+
+  /* ══ ВАРИАНТ B — «Большой призрачный эмодзи» ══ */
+  .vb{position:relative;border:1px solid var(--line);border-radius:20px;padding:1.5rem 1.2rem;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));overflow:hidden;min-height:230px;
+    transition:transform .3s, border-color .3s, box-shadow .3s}
+  .vb:hover{transform:translateY(-6px);border-color:rgba(47,123,255,.5);box-shadow:0 30px 60px -30px rgba(47,123,255,.6)}
+  .vb .ghost{position:absolute;right:-14px;bottom:-18px;font-size:7rem;opacity:.07;line-height:1;
+    filter:grayscale(1)}
+  .vb h4{font-size:1.05rem;font-weight:800;margin-bottom:.45rem;position:relative}
+  .vb p{font-size:.81rem;color:var(--muted);line-height:1.55;position:relative;max-width:24ch}
+  .vb .bar{position:absolute;left:1.2rem;right:1.2rem;bottom:1.1rem;height:4px;border-radius:100px;
+    background:rgba(255,255,255,.06);overflow:hidden}
+  .vb .bar i{display:block;height:100%;border-radius:100px;width:70%;
+    background:linear-gradient(90deg,#0d4ea8,#2f7bff,#58a6ff);box-shadow:0 0 12px rgba(47,123,255,.7)}
+  .vb .em{font-size:1.6rem;margin-bottom:.6rem;display:block;position:relative}
+
+  /* ══ ВАРИАНТ C — «Градиентная заливка + 3D» ══ */
+  .vc{position:relative;border:1px solid var(--line);border-radius:20px;padding:1.5rem 1.2rem;
+    background:linear-gradient(165deg, rgba(47,123,255,.14), rgba(10,14,21,.96));overflow:hidden;
+    min-height:230px;perspective:900px;
+    transition:transform .3s, border-color .3s, box-shadow .3s}
+  .vc:hover{transform:translateY(-6px) rotateX(0deg);border-color:rgba(47,123,255,.55);
+    box-shadow:0 34px 64px -30px rgba(47,123,255,.7)}
+  .vc .badge{display:inline-flex;align-items:center;gap:.35rem;font-size:.66rem;font-weight:700;
+    padding:.22rem .6rem;border-radius:100px;background:rgba(47,123,255,.2);border:1px solid rgba(47,123,255,.45);
+    color:#fff;margin-bottom:.9rem}
+  .vc .ic-big{font-size:2rem;margin-bottom:.5rem;display:block;
+    filter:drop-shadow(0 6px 16px rgba(47,123,255,.8))}
+  .vc h4{font-size:1.08rem;font-weight:800;margin-bottom:.45rem}
+  .vc p{font-size:.81rem;color:rgba(232,236,244,.72);line-height:1.55}
+  .vc .foot{margin-top:1rem;font-size:.68rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.7rem}
+
+  /* ══ ВАРИАНТ D — «Метрика сверху» ══ */
+  .vd{position:relative;border:1px solid var(--line);border-radius:20px;padding:1.3rem 1.2rem;
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));overflow:hidden;
+    transition:transform .3s, border-color .3s, box-shadow .3s}
+  .vd:hover{transform:translateY(-6px);border-color:rgba(47,123,255,.5);box-shadow:0 30px 60px -30px rgba(47,123,255,.6)}
+  .vd .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+  .vd .top .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;
+    background:var(--neon-soft);border:1px solid var(--line)}
+  .vd .top .val{font-size:1.3rem;font-weight:800;color:var(--neon-2);letter-spacing:-.02em}
+  .vd .top .val small{display:block;font-size:.58rem;font-weight:600;color:var(--muted);text-align:right;letter-spacing:.04em}
+  .vd h4{font-size:1rem;font-weight:800;margin-bottom:.4rem}
+  .vd p{font-size:.79rem;color:var(--muted);line-height:1.55}
+  .vd .tick{margin-top:.9rem;display:flex;flex-direction:column;gap:.25rem}
+  .vd .tick div{display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--muted)}
+  .vd .tick .chk{color:var(--ok);font-weight:700}
+
+  .hint{text-align:center;color:var(--muted);font-size:.74rem;margin:0 0 1.4rem}
+
+  @media (max-width:760px){
+    .grid3{grid-template-columns:1fr;gap:.8rem;max-width:420px}
+    .vb,.vc{min-height:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav"><div class="brand"><span class="dot"></span> Uniqpost</div></div>
+  <div class="hint">4 варианта оформления блока «Один сервис — любой контент». Листайте — выберите.</div>
+
+  <!-- ══════════ A ══════════ -->
+  <div class="sec"><span>ВАРИАНТ A — <b>«НОМЕР + ИКОНКА В СТЕКЛЕ»</b></span></div>
+  <div class="grid3">
+    <div class="va">
+      <div class="num">01</div>
+      <div class="icon">🎬</div>
+      <h4>Видео</h4>
+      <p>Один ролик → 5 уникальных версий. Загружай одно видео снова и снова — без банов за дубли.</p>
+      <div class="row"><span>метаданные</span><span>скорость</span><span>цвет</span><span>шум</span><span>звук</span></div>
+    </div>
+    <div class="va">
+      <div class="num">02</div>
+      <div class="icon">🖼️</div>
+      <h4>Изображения</h4>
+      <p>Публикуй одно фото повторно — свежие версии получают охват заново.</p>
+      <div class="row"><span>кроп</span><span>цвет</span><span>детали</span><span>метаданные</span></div>
+    </div>
+    <div class="va">
+      <div class="num">03</div>
+      <div class="icon">📝</div>
+      <h4>Текст</h4>
+      <p>ИИ-помощник пишет посты в вашем стиле — на основе ваших прошлых публикаций.</p>
+      <div class="row"><span>одобрить</span><span>поправить</span><span>сгенерировать</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ B ══════════ -->
+  <div class="sec mt"><span>ВАРИАНТ B — <b>«БОЛЬШАЯ ПРИЗРАЧНАЯ ИКОНКА»</b></span></div>
+  <div class="grid3">
+    <div class="vb">
+      <span class="ghost">🎬</span>
+      <span class="em">🎬</span>
+      <h4>Видео</h4>
+      <p>Один ролик → 5 уникальных версий. Без банов за дубли.</p>
+      <div class="bar"><i></i></div>
+    </div>
+    <div class="vb">
+      <span class="ghost">🖼️</span>
+      <span class="em">🖼️</span>
+      <h4>Изображения</h4>
+      <p>Повторная публикация фото возвращает охват.</p>
+      <div class="bar"><i style="width:55%"></i></div>
+    </div>
+    <div class="vb">
+      <span class="ghost">📝</span>
+      <span class="em">📝</span>
+      <h4>Текст</h4>
+      <p>ИИ пишет посты в вашем стиле.</p>
+      <div class="bar"><i style="width:85%"></i></div>
+    </div>
+  </div>
+
+  <!-- ══════════ C ══════════ -->
+  <div class="sec mt"><span>ВАРИАНТ C — <b>«ГРАДИЕНТ + КРУПНАЯ ИКОНКА»</b></span></div>
+  <div class="grid3">
+    <div class="vc">
+      <span class="badge">🎬 ВИДЕО</span>
+      <span class="ic-big">🎬</span>
+      <h4>Уникализация видео</h4>
+      <p>Один ролик → 5 уникальных версий. Алгоритм видит новое видео — охват возвращается.</p>
+      <div class="foot">Метаданные · скорость · цвет · шум · звук</div>
+    </div>
+    <div class="vc">
+      <span class="badge">🖼️ ФОТО</span>
+      <span class="ic-big">🖼️</span>
+      <h4>Изображения</h4>
+      <p>Публикуй одно фото повторно — свежие версии получают охват заново.</p>
+      <div class="foot">Кроп · цвет · детали · метаданные</div>
+    </div>
+    <div class="vc">
+      <span class="badge">📝 ТЕКСТ</span>
+      <span class="ic-big">📝</span>
+      <h4>ИИ-тексты</h4>
+      <p>Помощник пишет посты в вашем стиле на основе прошлых публикаций.</p>
+      <div class="foot">Одобрить · поправить · сгенерировать</div>
+    </div>
+  </div>
+
+  <!-- ══════════ D ══════════ -->
+  <div class="sec mt"><span>ВАРИАНТ D — <b>«ЦИФРА СВЕРХУ»</b></span></div>
+  <div class="grid3">
+    <div class="vd">
+      <div class="top"><span class="ico">🎬</span><span class="val">×5<small>версий</small></span></div>
+      <h4>Видео</h4>
+      <p>Один ролик превращается в 5 уникальных — алгоритм видит каждый как новый.</p>
+      <div class="tick"><div><span class="chk">✓</span> Без банов за дубли</div><div><span class="chk">✓</span> Автопубликация</div></div>
+    </div>
+    <div class="vd">
+      <div class="top"><span class="ico">🖼️</span><span class="val">∞<small>охват</small></span></div>
+      <h4>Изображения</h4>
+      <p>Повторная публикация фото возвращает охват — снова и снова.</p>
+      <div class="tick"><div><span class="chk">✓</span> Свежие версии</div><div><span class="chk">✓</span> Все площадки</div></div>
+    </div>
+    <div class="vd">
+      <div class="top"><span class="ico">📝</span><span class="val">ИИ<small>помощник</small></span></div>
+      <h4>Текст</h4>
+      <p>Посты в вашем стиле — на основе ваших прошлых публикаций.</p>
+      <div class="tick"><div><span class="chk">✓</span> Одобрить</div><div><span class="chk">✓</span> Или переписать</div></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

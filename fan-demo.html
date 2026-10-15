@@ -33,11 +33,11 @@
   .stat-line em{font-style:normal;color:var(--neon-2)}
 
   /* ── Веер ── */
-  .fan-stage{position:relative;height:520px;display:flex;align-items:flex-end;justify-content:center;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;-webkit-touch-callout:none}
+  .fan-stage{position:relative;height:580px;display:flex;align-items:flex-end;justify-content:center;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;-webkit-touch-callout:none}
   .fan-stage:active{cursor:grabbing}
   .fan-layout{position:relative;width:100%;max-width:60rem;height:100%;display:flex;justify-content:center;align-items:center}
   .fan-card{
-    position:absolute;top:50%;left:50%;width:16rem;height:25rem;margin:-12.5rem 0 0 -8rem;
+    position:absolute;top:50%;left:50%;width:16.5rem;height:29rem;margin:-14.5rem 0 0 -8.25rem;
     border-radius:20px;overflow:hidden;cursor:grab;will-change:transform;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;touch-action:none;
     border:1px solid var(--line);
     box-shadow:0 30px 60px -30px rgba(0,0,0,.95), 0 -1px 0 rgba(255,255,255,.04) inset;
@@ -84,15 +84,15 @@
   .total em{font-style:normal;color:var(--neon-2)}
 
   @media (max-width:768px){
-    .fan-stage{height:460px}
-    .fan-card{width:13rem;height:20.5rem;margin:-10.25rem 0 0 -6.5rem}
+    .fan-stage{height:520px}
+    .fan-card{width:13.5rem;height:23.5rem;margin:-11.75rem 0 0 -6.75rem}
     .fan-card .fc-title{font-size:.92rem}
     .fan-card .fc-views{font-size:1rem}
     .fan-card .fc-views small{font-size:.6rem}
   }
   @media (max-width:480px){
-    .fan-stage{height:420px}
-    .fan-card{width:10.4rem;height:16.4rem;margin:-8.2rem 0 0 -5.2rem}
+    .fan-stage{height:460px}
+    .fan-card{width:10.8rem;height:18.4rem;margin:-9.2rem 0 0 -5.4rem}
     .fan-card .fc-play{width:44px;height:44px;font-size:.95rem}
     .fan-card .fc-title{font-size:.8rem}
     .fan-card .fc-sub{font-size:.68rem}
