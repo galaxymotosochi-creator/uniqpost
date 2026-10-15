@@ -18,6 +18,7 @@
     --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { max-width:100%; overflow-x:hidden; }
   body {
     font-family: var(--font);
     background: var(--bg);
@@ -220,7 +221,7 @@
   .flow .stack{position:relative}
   .flow .step{
     position:sticky;top:14px;display:flex;align-items:center;gap:2rem;
-    height:80vh;min-height:80vh;max-height:80vh;margin-bottom:1.2rem;
+    height:80vh;min-height:80vh;max-height:80vh;margin-bottom:1.2rem;box-sizing:border-box;
     border:1px solid var(--line);border-radius:22px;
     background:linear-gradient(160deg, rgba(20,26,38,.98), rgba(10,14,21,.98));
     box-shadow:0 -1px 0 rgba(255,255,255,.03) inset, 0 30px 70px -40px rgba(0,0,0,.95);
@@ -228,36 +229,37 @@
   }
   .flow .step:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;
     background:linear-gradient(90deg,transparent,rgba(47,123,255,.6),transparent)}
-  .flow .step .peek{position:absolute;top:0;left:0;right:0;height:58px;display:flex;align-items:center;gap:.7rem;
-    padding:0 2.6rem;font-weight:700;font-size:1rem;
-    background:linear-gradient(180deg, rgba(17,23,36,.99) 45%, rgba(17,23,36,0))};
-    border-radius:22px 22px 0 0}
-  .flow .step .big{flex:0 0 170px;display:grid;place-items:center;position:relative}
-  .flow .step .big .emoji{font-size:3.6rem;animation:floaty2 3.4s ease-in-out infinite;
-    filter:drop-shadow(0 6px 16px rgba(47,123,255,.85))}
-  .flow .step .big .glow{position:absolute;width:150px;height:150px;border-radius:50%;
-    background:radial-gradient(circle at 50% 45%, rgba(47,123,255,.5), transparent 68%);
-    animation:gpulse2 2.8s ease-in-out infinite}
-  @keyframes floaty2{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-  @keyframes gpulse2{0%,100%{transform:scale(.85);opacity:.5}50%{transform:scale(1.15);opacity:1}}
-  .flow .step .txt{flex:1;min-width:0;padding-top:1rem}
+  .flow .step .bignum{position:absolute;right:.6rem;bottom:.2rem;
+    font-size:11rem;font-weight:800;line-height:1;color:rgba(47,123,255,.07);
+    pointer-events:none;letter-spacing:-.06em}
+  .flow .step .txt{flex:1;min-width:0;position:relative}
   .flow .step .num{font-size:.7rem;font-weight:700;color:var(--neon-2);letter-spacing:.1em}
-  .flow .step h4{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;margin:.35rem 0 .6rem}
-  .flow .step p{color:var(--muted);font-size:.94rem;line-height:1.62;max-width:52ch}
-  .flow .step .tags{margin-top:.8rem;display:flex;flex-wrap:wrap;gap:.35rem}
+  .flow .step .word{font-size:2.2rem;font-weight:800;letter-spacing:-.03em;line-height:1;
+    background:linear-gradient(120deg,#fff,#58a6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .flow .step .metric{display:flex;align-items:baseline;gap:.6rem;margin:.7rem 0 .1rem;flex-wrap:wrap}
+  .flow .step .metric .m{font-size:1.5rem;font-weight:800;color:var(--neon-2)}
+  .flow .step .metric .ml{font-size:.74rem;color:var(--muted)}
+  .flow .step h4{font-size:1.45rem;font-weight:800;letter-spacing:-.02em;margin:.35rem 0 .55rem}
+  .flow .step p{color:var(--muted);font-size:.9rem;line-height:1.6;max-width:54ch;margin-top:.9rem}
+  .flow .step .tags{margin-top:.85rem;display:flex;flex-wrap:wrap;gap:.35rem}
   .flow .step .tags span{font-size:.66rem;font-weight:600;color:var(--neon-2);
     border:1px solid rgba(47,123,255,.4);background:var(--neon-soft);border-radius:100px;padding:.16rem .55rem}
 
   .nets{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;width:150px;animation:floaty2 4s ease-in-out infinite}
+  .nets.nets-bottom{width:auto;display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.9rem;animation:none;
+    max-width:260px;justify-content:center}
+  .nets.nets-bottom .nt{aspect-ratio:auto}
+  .nets.nets-bottom .nt svg{width:30px;height:30px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
+  .nets.nets-bottom .nt:nth-child(7){grid-column:auto;justify-self:auto}
   .nets .nt{aspect-ratio:1/1;display:grid;place-items:center}
   .nets .nt svg{width:52px;height:52px;filter:drop-shadow(0 5px 14px rgba(0,0,0,.6))}
   .nets .nt:nth-child(7){grid-column:1 / -1;justify-self:center}
 
   @media (max-width:820px){
-    .flow .step{flex-direction:column;justify-content:center;height:80vh;min-height:80vh;max-height:80vh;padding:1.6rem 1.3rem;gap:1rem}
-    .flow .step .peek{height:56px;padding:0 1.3rem;font-size:.9rem}
+    .flow .step{flex-direction:column;justify-content:center;height:551px;min-height:551px;max-height:551px;padding:2rem 1.4rem;gap:1rem}
     .flow .step .big{flex:none}
-    .flow .step .big .emoji{font-size:2.8rem}
+    .flow .step .big .badge{width:88px;height:88px;font-size:2.2rem}
+    .flow .step .bignum{font-size:6.5rem;right:.6rem;top:auto;bottom:.2rem;transform:none;opacity:1}
     .flow .step .txt{padding-top:.4rem}
     .flow .step h4{font-size:1.25rem}
     .flow .step p{font-size:.87rem}
@@ -269,23 +271,19 @@
   /* ── 3D-карточки типов контента ── */
   .ctypes { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin:2.4rem auto 0; max-width:900px; }
   .ctype {
-    position:relative; border-radius:20px; padding:1.5rem 1.3rem 1.3rem; overflow:hidden;
+    position:relative; border-radius:20px; padding:1.6rem 1.3rem; overflow:hidden; min-height:220px;
     border:1px solid var(--line);
-    background:linear-gradient(165deg, rgba(47,123,255,.14), rgba(10,14,21,.96));
+    background:linear-gradient(180deg,var(--panel-2),var(--panel));
     transition:transform .3s ease, border-color .3s, box-shadow .3s;
     box-shadow:0 22px 44px -30px rgba(0,0,0,.9);
+    display:flex; flex-direction:column;
   }
-  .ctype:hover { transform:translateY(-6px); border-color:rgba(47,123,255,.55);
-    box-shadow:0 34px 64px -30px rgba(47,123,255,.7); }
-  .ctype .ctag { display:inline-flex; align-items:center; gap:.35rem; font-size:.66rem; font-weight:700;
-    padding:.22rem .6rem; border-radius:100px; background:rgba(47,123,255,.2);
-    border:1px solid rgba(47,123,255,.45); color:#fff; margin-bottom:.9rem; letter-spacing:.04em; }
-  .ctype .cico { font-size:2rem; display:block; margin-bottom:.5rem;
-    filter:drop-shadow(0 6px 16px rgba(47,123,255,.8)); }
-  .ctype h4 { font-size:1.08rem; font-weight:800; margin-bottom:.45rem; }
-  .ctype p { font-size:.81rem; color:rgba(232,236,244,.72); line-height:1.55; }
-  .ctype .cfoot { margin-top:1rem; font-size:.68rem; color:var(--muted);
-    border-top:1px solid var(--line); padding-top:.7rem; }
+  .ctype:hover { transform:translateY(-6px); border-color:rgba(47,123,255,.5);
+    box-shadow:0 34px 64px -32px rgba(47,123,255,.65); }
+  .ctype .cghost { position:absolute; right:-14px; bottom:-24px; font-size:8rem; line-height:1; opacity:.06;
+    filter:grayscale(1); pointer-events:none; }
+  .ctype h4 { position:relative; font-size:1.08rem; font-weight:800; margin-bottom:.5rem; }
+  .ctype p { position:relative; font-size:.81rem; color:var(--muted); line-height:1.6; }
   .why { max-width:760px; margin:3.4rem auto 0; }
   .why-lead { color:var(--muted); font-size:.94rem; line-height:1.65; text-align:center; margin-bottom:1rem; }
   .why-lead b { color:var(--text); }
@@ -307,8 +305,9 @@
 
   /* ── ТАРИФЫ — карусель карточек ── */
   .pland-note{color:var(--muted);font-size:.82rem;text-align:center;margin:-1rem 0 1.4rem;line-height:1.5}
+  .fx-carousel{max-width:100%;overflow:hidden}
   .fx-carousel .rail{display:flex;gap:.9rem;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;
-    padding:1.6rem .8rem 1.3rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    padding:1.6rem .8rem 1.3rem;-webkit-overflow-scrolling:touch;scrollbar-width:none;max-width:100%}
   .fx-carousel .rail::-webkit-scrollbar{display:none}
   .fx-carousel .pcard{flex:0 0 240px;min-height:540px;scroll-snap-align:center;padding:1.9rem 1.4rem;
     display:flex;flex-direction:column;justify-content:flex-start;position:relative;overflow:visible;
@@ -495,94 +494,78 @@
     <div class="stack">
 
       <div class="step" style="top:14px">
-        <div class="peek">📎 1. Добавляем контент</div>
-        <div class="big"><span class="glow"></span><span class="emoji">📎</span></div>
+        <div class="bignum">1</div>
         <div class="txt">
           <div class="num">ШАГ 1</div>
-          <h4>Добавляем контент</h4>
+          <div class="word">Контент</div>
+          <div class="metric"><span class="m">3 типа</span><span class="ml">видео | фото | текст</span></div>
           <p>Вставляете ссылку на видео или загружаете файл с устройства. Поддерживаем видео, фотографии и текстовые посты — всё в одном окне. Можно добавить сразу несколько материалов и поставить их в очередь обработки.</p>
-          <div class="tags"><span>🎬 Видео</span><span>🖼️ Фото</span><span>📝 Текст</span></div>
         </div>
       </div>
-
       <div class="step" style="top:78px">
-        <div class="peek">🎬 2. Обрабатываем контент</div>
-        <div class="big"><span class="glow"></span><span class="emoji">🎬</span></div>
+        <div class="bignum">2</div>
         <div class="txt">
           <div class="num">ШАГ 2</div>
-          <h4>Обрабатываем контент</h4>
-          <p>Видео уникализируем: меняем метаданные, микро-скорость, цвет, шум и звук. Из одного ролика получается до 5 версий, которые соцсети не считают дублями. Фото и текст готовим к публикации.</p>
-          <div class="tags"><span>Один ролик → 5 версий</span><span>Без банов за дубли</span></div>
+          <div class="word">Уникализация</div>
+          <div class="metric"><span class="m">бесконечное количество</span><span class="ml">из одного ролика</span></div>
+          <p>Меняем метаданные, микро-скорость, цвет, шум и звук. Из одного ролика можно делать бесконечное количество уникальных версий — соцсети не считают их дублями. Фото и текст тоже готовим к публикации.</p>
         </div>
       </div>
-
       <div class="step" style="top:142px">
-        <div class="peek">🌐 3. Выбираем соцсети</div>
-        <div class="big"><span class="glow"></span>
-        <div class="nets">
-          <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path d="M5.5 11.8l10.2-4.3c.5-.2.9.1.8.7l-1.7 8.1c-.1.6-.5.7-1 .4l-2.7-2-1.3 1.3c-.2.2-.3.3-.6.3l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1l-6.4 4-2.6-.8c-.6-.2-.6-.6.2-.8z" fill="#fff"/></svg></span>
-          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#0077FF"/><path d="M12.9 16.2c-4.1 0-6.6-2.9-6.7-7.6h2c.1 3.5 1.7 5 2.9 5.3V8.6h1.9v2.8c1.2-.1 2.4-1.4 2.8-2.8h1.9c-.3 1.7-1.5 3-2.4 3.5 1 .4 2.3 1.6 2.8 3.5h-2.1c-.4-1.3-1.5-2.3-2.8-2.4v2.4h-.3z" fill="#fff"/></svg></span>
-          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.4" fill="#E1306C"/></svg></span>
-          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1.5" y="4" width="21" height="16" rx="4.5" fill="#FF0000"/><path d="M10 8.8l5.5 3.2L10 15.2V8.8z" fill="#fff"/></svg></span>
-          <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#EE8208"/><circle cx="12" cy="10.2" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M8.4 15.2c1 .9 2.2 1.4 3.6 1.4s2.6-.5 3.6-1.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-          <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M15.5 12.6h-2.2V19h-2.7v-6.4H9v-2.3h1.6V8.9c0-1.7 1-2.9 2.8-2.9.8 0 1.5.1 1.7.1v2h-1.2c-.9 0-1.1.5-1.1 1.1v1.1h2.3l-.6 2.3z" fill="#fff"/></svg></span>
-          <span class="nt"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#000"/><path d="M14.2 6.5c.3 1.7 1.5 2.9 3.2 3.1v2c-1.2.1-2.3-.2-3.3-.9v4.3c0 2.3-1.7 4-4 4-2 0-3.6-1.4-3.9-3.3-.3-2.2 1.4-4.2 3.7-4.2.3 0 .6 0 .9.1v2.1c-.3-.1-.6-.2-.9-.2-1.1 0-1.9.9-1.8 2 .1 1 .9 1.7 1.9 1.7 1.1 0 2-.9 2-2V6.5h2.2z" fill="#25F4EE"/></svg></span>
-        </div></div>
         <div class="txt">
           <div class="num">ШАГ 3</div>
-          <h4>Выбираем соцсети</h4>
+          <div class="word">Соцсети</div>
+          <div class="metric"><span class="m">7</span><span class="ml">площадок одним кликом</span></div>
           <p>Отмечаете площадки одним кликом. Для каждой можно задать свои настройки и подписи. Один контент уходит сразу во все выбранные сети.</p>
-          <div class="tags"><span>Instagram</span><span>Facebook</span><span>VK</span><span>Telegram</span><span>YouTube</span><span>Одноклассники</span><span>TikTok</span></div>
+          <div class="nets nets-bottom">
+            <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#2AABEE"/><path d="M5.5 11.8l10.2-4.3c.5-.2.9.1.8.7l-1.7 8.1c-.1.6-.5.7-1 .4l-2.7-2-1.3 1.3c-.2.2-.3.3-.6.3l.2-2.8 5.2-4.7c.2-.2 0-.3-.3-.1l-6.4 4-2.6-.8c-.6-.2-.6-.6.2-.8z" fill="#fff"/></svg></span>
+            <span class="nt"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#0077FF"/><path d="M12.9 16.2c-4.1 0-6.6-2.9-6.7-7.6h2c.1 3.5 1.7 5 2.9 5.3V8.6h1.9v2.8c1.2-.1 2.4-1.4 2.8-2.8h1.9c-.3 1.7-1.5 3-2.4 3.5 1 .4 2.3 1.6 2.8 3.5h-2.1c-.4-1.3-1.5-2.3-2.8-2.4v2.4h-.3z" fill="#fff"/></svg></span>
+            <span class="nt"><svg viewBox="0 0 24 24"><rect x="1.5" y="1.5" width="21" height="21" rx="6" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.4" fill="#E1306C"/></svg></span>
+            <span class="nt"><svg viewBox="0 0 24 24"><rect x="1.5" y="4" width="21" height="16" rx="4.5" fill="#FF0000"/><path d="M10 8.8l5.5 3.2L10 15.2V8.8z" fill="#fff"/></svg></span>
+            <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#EE8208"/><circle cx="12" cy="10.2" r="3.2" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M8.4 15.2c1 .9 2.2 1.4 3.6 1.4s2.6-.5 3.6-1.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            <span class="nt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M15.5 12.6h-2.2V19h-2.7v-6.4H9v-2.3h1.6V8.9c0-1.7 1-2.9 2.8-2.9.8 0 1.5.1 1.7.1v2h-1.2c-.9 0-1.1.5-1.1 1.1v1.1h2.3l-.6 2.3z" fill="#fff"/></svg></span>
+            <span class="nt"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6" fill="#000"/><path d="M14.2 6.5c.3 1.7 1.5 2.9 3.2 3.1v2c-1.2.1-2.3-.2-3.3-.9v4.3c0 2.3-1.7 4-4 4-2 0-3.6-1.4-3.9-3.3-.3-2.2 1.4-4.2 3.7-4.2.3 0 .6 0 .9.1v2.1c-.3-.1-.6-.2-.9-.2-1.1 0-1.9.9-1.8 2 .1 1 .9 1.7 1.9 1.7 1.1 0 2-.9 2-2V6.5h2.2z" fill="#25F4EE"/></svg></span>
+          </div>
         </div>
       </div>
 
       <div class="step" style="top:206px">
-        <div class="peek">🕒 4. Настраиваем расписание</div>
-        <div class="big"><span class="glow"></span><span class="emoji">🕒</span></div>
+        <div class="bignum">4</div>
         <div class="txt">
           <div class="num">ШАГ 4</div>
-          <h4>Настраиваем расписание</h4>
+          <div class="word">Расписание</div>
+          <div class="metric"><span class="m">своё время</span><span class="ml">для каждой площадки</span></div>
           <p>Указываете дату и время — точное или интервалами. Можно задать свои часы для каждой площадки, распределить по дням недели и поставить в очередь. Система сама подберёт лучшее время.</p>
-          <div class="tags"><span>Своё время</span><span>По дням недели</span></div>
         </div>
       </div>
-
       <div class="step" style="top:270px">
-        <div class="peek">🚀 5. Автопубликация</div>
-        <div class="big"><span class="glow"></span><span class="emoji">🚀</span></div>
+        <div class="bignum">5</div>
         <div class="txt">
           <div class="num">ШАГ 5</div>
-          <h4>Автопубликация</h4>
+          <div class="word">Автопилот</div>
+          <div class="metric"><span class="m">7 площадок</span><span class="ml">из одного кабинета</span></div>
           <p>Дальше — без вас. В назначенный момент система публикует контент на все площадки, следит за результатом и ведёт статистику. Вы просто добавляете новый материал — остальное на автопилоте.</p>
-          <div class="tags"><span>7 площадок</span><span>Из одного кабинета</span></div>
         </div>
       </div>
-
     </div>
   </div>
 
   <div class="ctypes-title"><span>ОДИН СЕРВИС — <b>ЛЮБОЙ КОНТЕНТ</b></span></div>
   <div class="ctypes">
     <div class="ctype">
-      <span class="ctag">🎬 ВИДЕО</span>
-      <span class="cico">🎬</span>
-      <h4>Уникализация видео</h4>
-      <p>Один ролик → 5 уникальных версий. Алгоритм видит новое видео — охват возвращается.</p>
-      <div class="cfoot">Метаданные · скорость · цвет · шум · звук</div>
+      <span class="cghost">🎬</span>
+      <h4>Видео</h4>
+      <p>Один ролик → бесконечное количество уникальных версий. Без банов за дубли.</p>
     </div>
     <div class="ctype">
-      <span class="ctag">🖼️ ФОТО</span>
-      <span class="cico">🖼️</span>
+      <span class="cghost">🖼️</span>
       <h4>Изображения</h4>
-      <p>Публикуй одно фото повторно — свежие версии получают охват заново.</p>
-      <div class="cfoot">Кроп · цвет · детали · метаданные</div>
+      <p>Публикуй фото повторно — каждая версия как новое для алгоритма.</p>
     </div>
     <div class="ctype">
-      <span class="ctag">📝 ТЕКСТ</span>
-      <span class="cico">📝</span>
-      <h4>ИИ-тексты</h4>
-      <p>Помощник пишет посты в вашем стиле на основе прошлых публикаций.</p>
-      <div class="cfoot">Одобрить · поправить · сгенерировать</div>
+      <span class="cghost">📝</span>
+      <h4>Текст</h4>
+      <p>ИИ пишет посты в вашем стиле — учится на ваших текстах.</p>
     </div>
   </div>
 
@@ -787,8 +770,28 @@
   stage.addEventListener('dragstart',e=>e.preventDefault());
 
   addEventListener('resize',()=>{ if(!animating) layoutCards(); });
-  gsap.set(els,{opacity:0});
-  layoutCards();
+
+  // ── Анимация входа запускается при докрутке до секции (а не при загрузке) ──
+  gsap.set(els,{opacity:0,scale:.3,x:0,y:0,zIndex:0});
+  (function(){
+    const sec = document.getElementById('why') || document.querySelector('.fan-stage');
+    let started = false;
+    const start = () => {
+      if(started) return; started = true;
+      layoutCards();
+    };
+    if('IntersectionObserver' in window && sec){
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(en=>{ if(en.isIntersecting){ start(); io.disconnect(); } });
+      }, { threshold:0.25 });
+      io.observe(sec);
+      // страховка: если секция уже видна при загрузке — запустим сразу
+      const r = sec.getBoundingClientRect();
+      if(r.top < innerHeight*0.6 && r.bottom > 0) start();
+    } else {
+      start();
+    }
+  })();
 })();
 </script>
 </body>
