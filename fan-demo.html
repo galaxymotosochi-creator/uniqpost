@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Uniqpost — Веер карточек (превью 5)</title>
+<style>
+  :root{
+    --bg:#07080c; --line:rgba(60,130,255,.16); --neon:#2f7bff; --neon-2:#58a6ff;
+    --text:#e8ecf4; --muted:#7c8699;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+    background-image:
+      radial-gradient(900px 500px at 15% -10%, rgba(47,123,255,.14), transparent 60%),
+      radial-gradient(700px 400px at 100% 0%, rgba(47,123,255,.08), transparent 55%);}
+  .wrap{max-width:1000px;margin:0 auto;padding:2.4rem 1.2rem 3rem}
+
+  .nav{display:flex;align-items:center;gap:.6rem;margin-bottom:1.6rem}
+  .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.05rem;letter-spacing:-.02em}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:var(--neon);
+    box-shadow:0 0 12px var(--neon),0 0 22px rgba(47,123,255,.6);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.65;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+
+  .sec{display:flex;align-items:center;gap:1rem;text-transform:uppercase;font-size:.72rem;
+    letter-spacing:.16em;color:var(--muted);margin:0 0 1rem}
+  .sec:before,.sec:after{content:"";flex:1;height:1px;background:var(--line)}
+  .sec b{color:var(--text)}
+  .lead{color:var(--muted);font-size:.92rem;line-height:1.65;text-align:center;max-width:580px;margin:0 auto 1rem}
+  .lead b{color:var(--text)}
+  .stat-line{text-align:center;font-weight:800;font-size:.95rem;margin-bottom:1.4rem;color:var(--muted)}
+  .stat-line em{font-style:normal;color:var(--neon-2)}
+
+  /* ── Веер ── */
+  .fan-stage{position:relative;height:520px;display:flex;align-items:flex-end;justify-content:center;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:grab;-webkit-touch-callout:none}
+  .fan-stage:active{cursor:grabbing}
+  .fan-layout{position:relative;width:100%;max-width:60rem;height:100%;display:flex;justify-content:center;align-items:center}
+  .fan-card{
+    position:absolute;top:50%;left:50%;width:16rem;height:25rem;margin:-12.5rem 0 0 -8rem;
+    border-radius:20px;overflow:hidden;cursor:grab;will-change:transform;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;touch-action:none;
+    border:1px solid var(--line);
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.95), 0 -1px 0 rgba(255,255,255,.04) inset;
+    background:#0c0f16;
+  }
+  .fan-card .face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:1.4rem 1.1rem;gap:.5rem}
+  .fan-card .fc-tag{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    padding:.2rem .6rem;border-radius:100px;border:1px solid var(--line);color:var(--muted)}
+  .fan-card .fc-play{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:1.1rem;
+    background:rgba(47,123,255,.16);border:1px solid rgba(47,123,255,.45);color:#fff;margin:.3rem 0}
+  .fan-card .fc-title{font-size:1.02rem;font-weight:800;line-height:1.3}
+  .fan-card .fc-sub{font-size:.76rem;color:var(--muted);line-height:1.45}
+  .fan-card .fc-views{font-size:1.15rem;font-weight:800;margin-top:.2rem}
+  .fan-card .fc-views small{display:block;font-size:.66rem;font-weight:600;color:var(--muted);letter-spacing:.04em}
+  .fan-card.orig{background:linear-gradient(160deg,#141b2b,#0b0f18)}
+  .fan-card.dup{background:linear-gradient(160deg,#1a1114,#0c0a0c)}
+  .fan-card.dup .fc-play{background:rgba(255,107,107,.14);border-color:rgba(255,107,107,.4)}
+  .fan-card.dup .fc-views{color:#ff8b8b}
+  .fan-card.good{background:linear-gradient(160deg,#101d18,#0a100d)}
+  .fan-card.good .fc-play{background:rgba(79,208,138,.16);border-color:rgba(79,208,138,.45)}
+  .fan-card.good .fc-views{color:#5fe0a0}
+  .fan-card:after{content:"";position:absolute;inset:0;border-radius:20px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(47,123,255,.10),transparent 40%)}
+
+  /* ── Стрелки/точки ── */
+  .fan-ctrl{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1.2rem;z-index:30}
+  .arw{
+    position:relative;width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;
+    border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);
+    backdrop-filter:blur(16px);color:rgba(255,255,255,.6);outline:none;
+    box-shadow:0 4px 20px rgba(0,0,0,.4);transition:all .3s}
+  .arw:hover{border-color:rgba(255,255,255,.28);color:#fff}
+  .arw:active{opacity:.7}
+  .dots{display:flex;align-items:center;gap:.5rem}
+  .dots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+  .dots span.on{background:rgba(88,166,255,.9);transform:scale(1.3)}
+
+  .total{margin-top:1.6rem;text-align:center;padding:1.1rem 1.4rem;border-radius:18px;
+    border:1px solid rgba(47,123,255,.5);
+    background:linear-gradient(160deg, rgba(47,123,255,.12), rgba(10,14,21,.96));
+    box-shadow:0 28px 60px -34px rgba(47,123,255,.7);font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+  .total em{font-style:normal;color:var(--neon-2)}
+
+  @media (max-width:768px){
+    .fan-stage{height:460px}
+    .fan-card{width:13rem;height:20.5rem;margin:-10.25rem 0 0 -6.5rem}
+    .fan-card .fc-title{font-size:.92rem}
+    .fan-card .fc-views{font-size:1rem}
+    .fan-card .fc-views small{font-size:.6rem}
+  }
+  @media (max-width:480px){
+    .fan-stage{height:420px}
+    .fan-card{width:10.4rem;height:16.4rem;margin:-8.2rem 0 0 -5.2rem}
+    .fan-card .fc-play{width:44px;height:44px;font-size:.95rem}
+    .fan-card .fc-title{font-size:.8rem}
+    .fan-card .fc-sub{font-size:.68rem}
+    .fan-card .fc-views{font-size:.9rem}
+    .fan-card .fc-views small{font-size:.56rem}
+    .total{font-size:1rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="nav"><div class="brand"><span class="dot"></span> Uniqpost</div></div>
+
+  <div class="sec"><span>ЗАЧЕМ НУЖНА <b>УНИКАЛИЗАЦИЯ</b></span></div>
+  <div class="lead">
+    Одна и та же запись при повторной публикации теряет охват — соцсеть видит в ней <b>дубль</b>.
+    Уникализация меняет видео так, что для алгоритма это <b>новый ролик</b>.
+  </div>
+  <div class="stat-line">Один ролик → <em>до 5 версий</em> → охват заново</div>
+
+  <div class="fan-stage">
+    <div class="fan-layout" id="fanLayout"></div>
+  </div>
+
+  <div class="fan-ctrl">
+    <button class="arw" id="prev" aria-label="Назад">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="dots" id="dots"></div>
+    <button class="arw" id="next" aria-label="Вперёд">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
+
+</div>
+
+<script src="/libs/gsap.min.js"></script>
+<script>
+(function(){
+  const CARDS = [
+    { cls:'orig',  tag:'ОРИГИНАЛ', play:'▶',  title:'Выставили рилс',                    sub:'Набрал 200–1000 просмотров',           views:'200–1000', vlabel:'просмотров' },
+    { cls:'dup',   tag:'БЕЗ УНИКАЛИЗАЦИИ', play:'⏸', title:'Повторно выставить нельзя',  sub:'Без уникализации видео не пропустят совсем', views:'0', vlabel:'просмотров' },
+    { cls:'good',  tag:'ВЕРСИЯ 1', play:'🎬', title:'Уникализация № 1',                 sub:'Добавляет ещё 1000–5000 просмотров',  views:'+1000–5000', vlabel:'просмотров' },
+    { cls:'good',  tag:'ВЕРСИЯ 2', play:'🎬', title:'Уникализация № 2',                 sub:'Каждая версия — новый охват',          views:'+1000–5000', vlabel:'просмотров' },
+    { cls:'good',  tag:'ВЕРСИЯ 3', play:'🎬', title:'Уникализация № 3',                 sub:'И так до бесконечности',               views:'+1000–5000', vlabel:'просмотров' },
+    { cls:'good',  tag:'🔥 ЗАЛЕТЕЛ', play:'🚀', title:'Ролик может залететь',           sub:'100 — 1 000 000 просмотров',           views:'до 1 000 000', vlabel:'просмотров' },
+    { cls:'good',  tag:'ИТОГ', play:'✅',  title:'Снимать заново не нужно',             sub:'Один рилс работает снова и снова',     views:'∞', vlabel:'охват' },
+  ];
+
+  const MAX_VISIBLE = 7, HALF = 3;
+  const FAN = [
+    { rot:-21, scale:0.7756, x:-30, y:7.3, z:1 },
+    { rot:-14, scale:0.8498, x:-22, y:4.0, z:2 },
+    { rot:-7,  scale:0.9346, x:-11, y:1.3, z:3 },
+    { rot:0,   scale:1.0,    x:0,   y:0.0, z:10 },
+    { rot:7,   scale:0.9346, x:11,  y:1.3, z:3 },
+    { rot:14,  scale:0.8498, x:22,  y:4.0, z:2 },
+    { rot:21,  scale:0.7756, x:30,  y:7.3, z:1 },
+  ];
+  function mult(w){ if(w<480)return .28; if(w<640)return .38; if(w<768)return .5; if(w<1024)return .75; return 1; }
+  function hmult(w){ let ideal = w<480?22*16 : w<640?26*16 : w<768?28*16 : w<1024?34*16 : 38*16;
+    const avail = innerHeight*0.7; return avail>=ideal ? 1 : avail/ideal; }
+
+  const layout = document.getElementById('fanLayout');
+  const dotsEl = document.getElementById('dots');
+  // старт с карточки «Оригинал» (индекс 0) — она встаёт в центр веера
+  const FIRST = 0;
+  let center = FIRST, animating = false, entered = false, prevVisible = new Set(), dir = 'right';
+
+  CARDS.forEach((c,i)=>{
+    const el = document.createElement('div');
+    el.className = 'fan-card ' + c.cls;
+    el.innerHTML = `<div class="face">
+      <div class="fc-tag">${c.tag}</div>
+      <div class="fc-play">${c.play}</div>
+      <div class="fc-title">${c.title}</div>
+      <div class="fc-sub">${c.sub}</div>
+      <div class="fc-views">👁 ${c.views}<small>${c.vlabel}</small></div>
+    </div>`;
+    layout.appendChild(el);
+  });
+  const els = [...layout.querySelectorAll('.fan-card')];
+
+  CARDS.forEach((_,i)=>{ const d=document.createElement('span'); dotsEl.appendChild(d); });
+  const dots = [...dotsEl.children];
+
+  const total = CARDS.length, needsPager = true; // всегда листаем: видимых 7 из N
+
+  function visibleMap(c){
+    const m = new Map();
+    if(!needsPager){ CARDS.forEach((_,i)=>m.set(i,i)); return m; }
+    for(let s=0;s<MAX_VISIBLE;s++) m.set(((c+s-HALF)%total+total)%total, s);
+    return m;
+  }
+  function slotCfg(slot){ return needsPager ? FAN[slot] : (function(){
+    const c=total>>1, dist=total>1?(slot-c)/c:0, ad=Math.abs(dist);
+    return { rot:dist*21, scale:1-0.2244*ad*ad, x:dist*30, y:ad*ad*7.3, z:10-Math.abs(slot-c) };
+  })(); }
+
+  let layoutToken = 0;
+  function layoutCards(){
+    const token = ++layoutToken;
+    const m = mult(innerWidth), h = hmult(innerWidth);
+    const vm = visibleMap(center);
+    let done=0; const cnt=vm.size;
+    const fin=()=>{ if(++done>=cnt && token===layoutToken){ animating=false; entered=true; } };
+    els.forEach((el,idx)=>{
+      const slot = vm.get(idx);
+      const was = prevVisible.has(idx);
+      if(slot!==undefined){
+        const {x,y,rot,scale,z} = slotCfg(slot);
+        const tgt = { x:x*m+'rem', y:y*h+'rem', rotation:rot, scale, opacity:1, zIndex:z };
+        if(!entered){
+          gsap.set(el,{x:0,y:12*h+'rem',rotation:0,scale:.5,opacity:0,zIndex:z});
+          gsap.to(el,{...tgt,duration:1.2,ease:'elastic.out(1.05,.78)',delay:.2+slot*.06,onComplete:fin});
+        } else if(!was){
+          const ex = dir==='right'?40:-40;
+          gsap.set(el,{x:ex+'rem',y:y*h+'rem',rotation:dir==='right'?30:-30,scale:.5,opacity:0,zIndex:z});
+          gsap.to(el,{...tgt,duration:.6,ease:'power2.out',onComplete:fin});
+        } else {
+          gsap.to(el,{...tgt,duration:.5,ease:'power2.out',onComplete:fin});
+        }
+      } else if(was){
+        const ex = dir==='right'?-40:40;
+        gsap.set(el,{zIndex:0});
+        gsap.to(el,{x:ex+'rem',opacity:0,scale:.5,rotation:dir==='right'?-30:30,duration:.4,ease:'power2.in'});
+      } else {
+        gsap.set(el,{opacity:0,scale:.3,x:0,y:0,zIndex:0});
+      }
+    });
+    prevVisible = new Set(vm.keys());
+    dots.forEach((d,i)=>d.classList.toggle('on', i===center));
+    animating=true;
+  }
+
+  function cycle(d){
+    if(!needsPager) return;
+    dir = d; center = d==='right' ? (center+1)%total : (center-1+total)%total;
+    layoutCards();
+  }
+  document.getElementById('next').onclick=()=>cycle('right');
+  document.getElementById('prev').onclick=()=>cycle('left');
+
+  // свайп — тройная страховка (pointer + touch), ловим на document
+  const stage = document.querySelector('.fan-stage');
+  let sx=0, sy=0, tracking=false;
+  const begin=(x,y)=>{ tracking=true; sx=x; sy=y; };
+  const move=(x,y,e)=>{
+    if(!tracking) return;
+    const dx=x-sx, dy=y-sy;
+    if(Math.abs(dx)>8 && Math.abs(dx)>Math.abs(dy)){ if(e&&e.cancelable) e.preventDefault(); }
+  };
+  const end=(x,y)=>{
+    if(!tracking) return; tracking=false;
+    const dx=x-sx, dy=y-sy;
+    if(Math.abs(dx)>30 && Math.abs(dx)>Math.abs(dy)) cycle(dx<0?'right':'left');
+  };
+
+  // Touch — единственный обработчик на телефоне (без дубля с pointer)
+  let usedTouch = false;
+  stage.addEventListener('touchstart',e=>{ usedTouch=true; const t=e.touches[0]; begin(t.clientX,t.clientY); },{passive:true});
+  stage.addEventListener('touchmove',e=>{ const t=e.touches[0]; move(t.clientX,t.clientY,e); },{passive:false});
+  stage.addEventListener('touchend',e=>{ const t=e.changedTouches[0]; end(t.clientX,t.clientY); },{passive:true});
+
+  // Pointer (мышь + браузеры) — игнорим, если уже был touch
+  stage.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch' && usedTouch) return; if(e.pointerType==='mouse'&&e.button!==0) return; begin(e.clientX,e.clientY); });
+  window.addEventListener('pointermove',e=>{ if(e.pointerType==='touch' && usedTouch) return; move(e.clientX,e.clientY,e); });
+  window.addEventListener('pointerup',e=>{ if(e.pointerType==='touch' && usedTouch) return; end(e.clientX,e.clientY); });
+  window.addEventListener('pointercancel',()=>{ tracking=false; });
+
+  stage.addEventListener('dragstart',e=>e.preventDefault());
+
+  addEventListener('resize',()=>{ if(!animating) layoutCards(); });
+  gsap.set(els,{opacity:0});
+  layoutCards();
+})();
+</script>
+</body>
+</html>
